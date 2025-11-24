@@ -205,10 +205,72 @@ function renderCsvTable(){
     body.appendChild(tr);
   });
 
-  body.querySelectorAll('input[type=checkbox][data-idx]').forEach(ch=> ch.onchange = e => {
-    const idx = parseInt(e.target.getAttribute('data-idx'));
-    if(e.target.checked) selectedSet.add(idx); else selectedSet.delete(idx);
-  });
+// ... inside renderCsvTable() ...
+
+// 1. Find the 'Edit' buttons
+body.querySelectorAll('button.edit').forEach(btn => btn.onclick = async () => {
+    const idx = parseInt(btn.getAttribute('data-idx'));
+    
+    // Find the row in memory
+    const row = csvRaw.find(r => r.__index === idx);
+    if (!row) return;
+
+    // Check if we are in "Database Mode" (buyers/listings) or "Offline Mode" (matches)
+    const currentCsv = $('csvSelect').value;
+    const isDbData = (currentCsv === 'buyers.csv' || currentCsv === 'listings.csv');
+
+    // Create a copy of the row to edit so we don't break the original yet
+    const editedRow = { ...row };
+    
+    // Ask user for changes (simple prompt loop)
+    let hasChanges = false;
+    for (const col of csvColumns) {
+        // Skip internal fields like __index
+        if (col === '__index') continue; 
+        
+        const oldVal = row[col] || '';
+        const newVal = prompt(`Edit ${col}`, oldVal);
+        
+        if (newVal !== null && newVal !== oldVal) {
+            editedRow[col] = newVal;
+            hasChanges = true;
+        }
+    }
+
+    if (!hasChanges) return; // User cancelled or changed nothing
+
+    // IF ONLINE DATABASE: Send PUT request to Server
+    if (isDbData && row.id) {
+        try {
+            const apiEndpoint = currentCsv === 'buyers.csv' ? '/api/buyers' : '/api/listings';
+            
+            // Clean up: Remove __index before sending to DB
+            delete editedRow.__index;
+
+            const res = await fetch(`${apiEndpoint}/${row.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editedRow)
+            });
+
+            if (res.ok) {
+                alert('Saved successfully!');
+                await loadCsvFile(currentCsv); // Reload fresh data from DB
+            } else {
+                alert('Server failed to save edit.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error connecting to server.');
+        }
+    } 
+    // IF OFFLINE (Matches or uploaded files): Just update memory
+    else {
+        Object.assign(row, editedRow); // Update local object
+        pushCsvEditsToState();
+        renderCsvTable();
+    }
+});
   
   // NOTE: Editing here is Client-Side Only (Memory) unless we add an UPDATE endpoint
   body.querySelectorAll('button.edit').forEach(btn=> btn.onclick = ()=> {
@@ -224,13 +286,32 @@ function renderCsvTable(){
   });
 }
 
-function deleteSelectedRows(){
+async function deleteSelectedRows(){
   if(!selectedSet.size){ alert('No selection'); return; }
-  if(!confirm(`Delete ${selectedSet.size} rows (from memory only)?\n(To delete from DB, implementation needed on server)`)) return;
-  csvRaw = csvRaw.filter(r => !selectedSet.has(r.__index));
-  pushCsvEditsToState();
+  if(!confirm(`Are you sure you want to permanently delete ${selectedSet.size} rows?`)) return;
+
+  const currentCsv = $('csvSelect').value;
+  const isBuyer = currentCsv === 'buyers.csv';
+  const apiBase = isBuyer ? '/api/buyers' : '/api/listings';
+
+  // Loop through selected items and delete one by one
+  for(const idx of selectedSet){
+    const row = csvRaw.find(r => r.__index === idx);
+    if(row && row.id){
+      try {
+        const res = await fetch(`${apiBase}/${row.id}`, { method: 'DELETE' });
+        if(!res.ok) console.error(`Failed to delete ${row.id}`);
+      } catch(e){
+        console.error('Network error deleting', row.id);
+      }
+    }
+  }
+
+  alert('Deletion complete. Refreshing table...');
   selectedSet.clear();
-  renderCsvTable();
+  
+  // Reload fresh data from the database
+  await loadCsvFile(currentCsv);
 }
 
 function downloadCurrentCsv(){

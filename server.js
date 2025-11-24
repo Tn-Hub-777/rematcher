@@ -66,6 +66,64 @@ app.post('/api/listings', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ... existing routes ...
+
+// 5. DELETE a buyer
+app.delete('/api/buyers/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Run SQL to remove from Neon
+    await pool.query('DELETE FROM buyers WHERE id = $1', [id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Delete Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 6. DELETE a listing
+app.delete('/api/listings/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM listings WHERE id = $1', [id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Delete Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ... existing DELETE routes ...
+
+// 7. EDIT (UPDATE) a buyer
+app.put('/api/buyers/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedRecord = req.body; // This is the full new data
+    
+    // We update the 'doc' column with the new JSON object
+    await pool.query('UPDATE buyers SET doc = $1 WHERE id = $2', [updatedRecord, id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Update Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 8. EDIT (UPDATE) a listing
+app.put('/api/listings/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedRecord = req.body;
+    
+    await pool.query('UPDATE listings SET doc = $1 WHERE id = $2', [updatedRecord, id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Update Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+// ... app.listen ...
 // --- START SERVER ---
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
