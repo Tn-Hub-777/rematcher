@@ -15,7 +15,7 @@ app.use(express.static('public')); // Serves your HTML/JS files
 
 // 3. Database Connection
 // Uses the Cloud variable if available, otherwise falls back to local string
-const connectionString = process.env.DATABASE_URL || 'postgres://neondb_owner:PASTE_YOUR_FULL_NEON_STRING_HERE@...';
+const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_CqK0Ota5HrbE@ep-hidden-bush-aepmoy8b-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
 
 const pool = new Pool({
   connectionString,

@@ -1,418 +1,482 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="bg-slate-50 antialiased">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>RE Matcher — Cloud Database</title>
+  <title>RE Matcher — Pro Dashboard</title>
+  
+  <!-- 1. Tailwind CSS (The engine for the fresh look) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 2. Google Fonts (Inter) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- 3. Icons (Phosphor) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- 4. PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <!-- 5. Your App Logic -->
+  <script src="src/app.js" defer></script>
 
   <style>
-    :root{
-      --bg:#f3f6fb; --card:#ffffff; --muted:#6b7280; --accent:#2563eb; --danger:#ef4444;
-      --radius:12px; --pad:18px;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      color:#111827;
+    /* --- CUSTOM OVERRIDES TO MATCH YOUR EXISTING JS --- */
+    body { font-family: 'Inter', sans-serif; }
+    
+    /* 1. Navigation Active State */
+    nav button.active {
+      background-color: #4f46e5; /* Indigo-600 */
+      color: white;
+      border-color: transparent;
+      font-weight: 600;
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
     }
-    html,body{height:100%; margin:0; background:var(--bg);}
-    .wrap{max-width:1200px;margin:28px auto;padding:12px;}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:52px;height:52px;background:var(--accent);color:white;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
-    h1{margin:0;font-size:20px}
-    nav{margin-left:auto;display:flex;gap:8px}
-    nav button{background:white;border:1px solid #e6e9ef;padding:10px 14px;border-radius:12px;cursor:pointer}
-    nav button.active{background:var(--accent);color:white;border-color:var(--accent)}
-    .card{background:var(--card);border-radius:var(--radius);padding:var(--pad);box-shadow:0 4px 18px rgba(12,18,31,0.06);margin-bottom:16px}
-    label{display:block;font-weight:700;margin-bottom:6px}
-    .row{display:flex;gap:12px;align-items:center}
-    .col{flex:1}
-    input[type=text], input[type=number], select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:#fff}
-    textarea{min-height:100px;resize:vertical}
-    .small{width:160px}
-    .muted{color:var(--muted);font-size:13px}
-    .primary{background:var(--accent);color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
-    .primary:disabled{background:#93c5fd;cursor:not-allowed;}
-    .danger{background:var(--danger);color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    th,td{padding:8px;border-bottom:1px solid #f1f5f9;text-align:left}
-    .listings-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-    .listing{background:#f8fafc;padding:10px;border-radius:8px;width:280px;box-shadow:0 1px 0 rgba(0,0,0,0.02)}
-    .controls{display:flex;gap:8px;align-items:center}
-    .filters-area{margin-top:12px;background:#fbfdff;border-radius:8px;padding:12px;border:1px solid #eef3ff}
-    .filter-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-    .btn-ghost{background:white;border:1px solid #e6e9ef;padding:8px 10px;border-radius:8px}
-    @media (max-width:900px){ .row{flex-direction:column} .small{width:100%} .listing{width:100%} nav{flex-wrap:wrap} }
-  </style>
 
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    /* 2. Dynamic Table Styling (Since JS creates clean HTML, we style it here) */
+    table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    thead th { 
+      background: #f8fafc; 
+      color: #64748b; 
+      font-weight: 600; 
+      text-transform: uppercase; 
+      font-size: 0.75rem; 
+      letter-spacing: 0.05em; 
+      padding: 12px 24px; 
+      border-bottom: 1px solid #e2e8f0; 
+      text-align: left;
+    }
+    tbody td { 
+      padding: 16px 24px; 
+      border-bottom: 1px solid #f1f5f9; 
+      color: #334155; 
+      font-size: 0.875rem; 
+      background: white;
+      transition: background 0.2s;
+    }
+    tbody tr:hover td { background: #f8fafc; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* 3. Dynamic Cards (Matches Tab) */
+    .card { 
+      background: white; 
+      border-radius: 1rem; 
+      padding: 1.5rem; 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+      border: 1px solid #e2e8f0;
+      margin-bottom: 1rem;
+    }
+    .listings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .listing {
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+    }
+    .listing:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    /* 4. Edit/Delete Buttons inside table */
+    button.edit {
+      background: white;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    button.edit:hover {
+      border-color: #4f46e5;
+      color: #4f46e5;
+      background: #eef2ff;
+    }
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="logo">RE</div>
+
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <!-- Brand -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30">
+            <i class="ph ph-house-line text-xl"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-xl tracking-tight text-slate-900 leading-none">RE Matcher</h1>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">Database Connected</p>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex items-center gap-2">
+          <button data-route="buyers" class="active px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">
+            Buyers
+          </button>
+          <button data-route="listings" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">
+            Listings
+          </button>
+          <div class="w-px h-6 bg-slate-200 mx-1"></div>
+          <button data-route="data" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">
+            Data View
+          </button>
+          <button data-route="matches" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">
+            Matches
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- 1. BUYER FORM -->
+    <section id="page-buyers" class="animate-fade-in">
+      <div class="flex justify-between items-end mb-6">
         <div>
-          <h1>RE Matcher — Cloud DB</h1>
-          <div class="muted">Connected to Neon Database</div>
+          <h2 class="text-2xl font-bold text-slate-900">Add New Buyer</h2>
+          <p class="text-slate-500 mt-1">Enter client requirements to match against database.</p>
         </div>
       </div>
 
-      <nav>
-        <button data-route="buyers" class="active">Buyer Form</button>
-        <button data-route="listings">Listing Form</button>
-        <button data-route="data">Data</button>
-        <button data-route="matches">Matches</button>
-      </nav>
-    </header>
-
-    <section id="page-buyers" class="card">
-      <h2>Manage Enquiry — Buyer Form</h2>
-      <div class="muted">Fill required fields and click <strong>Add Buyer</strong></div>
-
-      <div style="margin-top:14px" class="card">
-        <div class="row">
-          <div class="col">
-            <label>Name *</label>
-            <input id="buyer_name" type="text" placeholder="Name" />
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:p-8">
+        <!-- Row 1 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Name <span class="text-red-500">*</span></label>
+            <input id="buyer_name" type="text" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 transition-colors" placeholder="Enter client name" />
           </div>
-          <div class="col small">
-            <label>Mobile No *</label>
-            <input id="buyer_mobile" type="text" placeholder="Mobile Number" />
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Mobile <span class="text-red-500">*</span></label>
+            <input id="buyer_mobile" type="text" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 transition-colors" placeholder="10-digit number" />
           </div>
-          <div class="col small">
-            <label>Second Mobile</label>
-            <input id="buyer_mobile2" type="text" placeholder="Mobile Number" />
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Second Mobile</label>
+            <input id="buyer_mobile2" type="text" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
           </div>
-          <div class="col small">
-            <label>Email</label>
-            <input id="buyer_email" type="text" placeholder="Email" />
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+            <input id="buyer_email" type="text" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
           </div>
         </div>
 
-        <div class="row" style="margin-top:12px">
-          <div class="col small">
-            <label>Country *</label>
-            <select id="buyer_country">
-              <option>India</option>
-            </select>
+        <!-- Row 2 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Country</label>
+            <select id="buyer_country" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"><option>India</option></select>
           </div>
-          <div class="col small">
-            <label>State *</label>
-            <input id="buyer_state" placeholder="State"/>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">State</label>
+            <input id="buyer_state" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500" />
           </div>
-          <div class="col">
-            <label>City *</label>
-            <input id="buyer_city" placeholder="City"/>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">City</label>
+            <input id="buyer_city" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500" />
           </div>
-          <div class="col small">
-            <label>Service Type *</label>
-            <select id="buyer_service_type">
-              <option>Buy</option>
-              <option>Rent</option>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Service</label>
+            <select id="buyer_service_type" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
+              <option>Buy</option><option>Rent</option>
             </select>
           </div>
         </div>
 
-        <div class="row" style="margin-top:12px">
-          <div class="col small">
-            <label>Property Type</label>
-            <input id="buyer_property_type" placeholder="e.g. 2BHK"/>
-          </div>
-          <div class="col small">
-            <label>Sale Type</label>
-            <select id="buyer_sale_type">
-              <option>Sale</option>
-              <option>Rent</option>
-            </select>
-          </div>
-          <div class="col small">
-            <label>Furnishing Status</label>
-            <select id="buyer_furnishing">
-              <option>Furnished</option>
-              <option>Semi-Furnished</option>
-              <option>Un-Furnished</option>
-            </select>
-          </div>
-          <div class="col small">
-            <label>Possession Status</label>
-            <select id="buyer_possession_status">
-              <option>Ready</option>
-              <option>Under Construction</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <div class="col small">
-            <label>Possession Time</label>
-            <select id="buyer_possession_time"><option>Immediate</option><option>3 months</option><option>6 months</option></select>
-          </div>
-          <div class="col small">
-            <label>Approx Budget</label>
-            <input id="buyer_budget" placeholder="Budget number" />
-          </div>
-          <div class="col small">
-            <label>Budget Unit</label>
-            <select id="buyer_budget_unit">
-              <option value="lakh">Lakh</option>
-              <option value="crore">Crore</option>
-              <option value="thousand">Thousand</option>
-            </select>
-          </div>
-          <div class="col small">
-            <label>Area</label>
-            <input id="buyer_area" placeholder="Ex. 1200" />
-          </div>
-          <div class="col small">
-            <label>Area Unit</label>
-            <select id="buyer_area_unit">
-              <option value="Sq Mt" selected>Sq Mt</option>
-              <option value="Sq Ft">Sq Ft</option>
-            </select>
+        <!-- Row 3: Requirements -->
+        <div class="p-5 bg-slate-50 rounded-xl border border-slate-100 mb-6">
+          <h3 class="text-sm font-bold text-indigo-600 uppercase tracking-wide mb-4">Property Requirements</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Type</label>
+              <input id="buyer_property_type" placeholder="e.g. 2BHK" class="w-full rounded-md border-slate-200 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Budget (Value)</label>
+              <input id="buyer_budget" placeholder="0" class="w-full rounded-md border-slate-200 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Unit</label>
+              <select id="buyer_budget_unit" class="w-full rounded-md border-slate-200 text-sm">
+                <option value="lakh">Lakh</option><option value="crore">Crore</option><option value="thousand">Thousand</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Possession</label>
+              <select id="buyer_possession_status" class="w-full rounded-md border-slate-200 text-sm">
+                <option>Ready</option><option>Under Construction</option>
+              </select>
+            </div>
+            
+            <!-- Hidden inputs kept for compatibility but maybe less prominent -->
+            <div class="hidden">
+               <select id="buyer_sale_type"><option>Sale</option></select>
+               <select id="buyer_furnishing"><option>Furnished</option></select>
+               <select id="buyer_possession_time"><option>Immediate</option></select>
+               <input id="buyer_area" />
+               <select id="buyer_area_unit"><option>Sq Mt</option></select>
+            </div>
           </div>
         </div>
 
-        <div style="margin-top:12px" class="row">
-          <div class="col">
-            <label>Preferred Localities</label>
-            <input id="buyer_localities" placeholder="comma separated"/>
+        <!-- Row 4 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Preferred Localities</label>
+            <input id="buyer_localities" placeholder="Comma separated areas..." class="w-full rounded-lg border-slate-200" />
           </div>
-          <div class="col">
-            <label>Preferred Projects</label>
-            <input id="buyer_projects" placeholder="comma separated"/>
-          </div>
-        </div>
-
-        <div style="margin-top:12px" class="row">
-          <div class="col small">
-            <label>Lead Source</label>
-            <input id="buyer_lead_source" />
-          </div>
-          <div class="col small">
-            <label>Referral Name</label>
-            <input id="buyer_referral" />
-          </div>
-          <div class="col small">
-            <label>NRI</label>
-            <select id="buyer_nri"><option value="no">No</option><option value="yes">Yes</option></select>
-          </div>
-          <div class="col small">
-            <label>Loan Required</label>
-            <select id="buyer_loan_required"><option value="no">No</option><option value="yes">Yes</option></select>
-          </div>
-          <div class="col small">
-            <label>Purpose</label>
-            <select id="buyer_purpose"><option>Self</option><option>Investment</option></select>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Preferred Projects</label>
+            <input id="buyer_projects" placeholder="Specific project names..." class="w-full rounded-lg border-slate-200" />
           </div>
         </div>
 
-        <div style="margin-top:12px">
-          <label>Specific Requirements</label>
-          <textarea id="buyer_specific" placeholder="Any special requirements"></textarea>
+        <!-- Row 5: Extra Info -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <input id="buyer_lead_source" placeholder="Lead Source" class="rounded-lg border-slate-200 text-sm" />
+          <input id="buyer_referral" placeholder="Referral Name" class="rounded-lg border-slate-200 text-sm" />
+          <select id="buyer_nri" class="rounded-lg border-slate-200 text-sm"><option value="no">NRI: No</option><option value="yes">NRI: Yes</option></select>
+          <select id="buyer_loan_required" class="rounded-lg border-slate-200 text-sm"><option value="no">Loan: No</option><option value="yes">Loan: Yes</option></select>
+          <select id="buyer_purpose" class="rounded-lg border-slate-200 text-sm"><option>Self Use</option><option>Investment</option></select>
         </div>
 
-        <div style="margin-top:12px" class="row">
-          <button id="addBuyer" class="primary">Add Buyer</button>
-          <button id="downloadBuyers" class="btn-ghost">Download backup.csv</button>
+        <!-- Textarea -->
+        <div class="mb-8">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Specific Requirements / Notes</label>
+          <textarea id="buyer_specific" rows="3" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Any other details..."></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4 pt-6 border-t border-slate-100">
+          <button id="addBuyer" class="primary bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md shadow-indigo-200 transition-all">
+            Add Buyer to Database
+          </button>
+          <button id="downloadBuyers" class="btn-ghost text-slate-600 hover:bg-slate-100 px-6 py-2.5 rounded-lg font-medium transition-colors">
+            Backup CSV
+          </button>
         </div>
       </div>
     </section>
 
-    <section id="page-listings" class="card" style="display:none">
-      <h2>Add Listing — Property Details</h2>
-      <div class="muted">Add a property listing that will be matched with buyers</div>
+    <!-- 2. LISTING FORM PAGE -->
+    <section id="page-listings" class="hidden">
+      <div class="flex justify-between items-end mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Add Property Listing</h2>
+          <p class="text-slate-500 mt-1">Add inventory to be matched with buyers.</p>
+        </div>
+      </div>
 
-      <div style="margin-top:14px" class="card">
-        <div class="row">
-          <div class="col small">
-            <label>Sell / Rent</label>
-            <select id="listing_deal_type"><option>Sell</option><option>Rent</option></select>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:p-8">
+        <!-- Property Basics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Deal Type</label>
+            <select id="listing_deal_type" class="w-full rounded-lg border-slate-200"><option>Sell</option><option>Rent</option></select>
           </div>
-          <div class="col small">
-            <label>Furnishing</label>
-            <select id="listing_furnishing"><option>Furnished</option><option>Semi-Furnished</option><option>Un-Furnished</option></select>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Property Type</label>
+            <input id="listing_property_type" class="w-full rounded-lg border-slate-200" placeholder="Apartment, Villa..." />
           </div>
-          <div class="col">
-            <label>Property Type</label>
-            <input id="listing_property_type" placeholder="e.g. Apartment"/>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Bedrooms</label>
+            <input id="listing_bedrooms" class="w-full rounded-lg border-slate-200" placeholder="e.g. 3" />
           </div>
-          <div class="col small">
-            <label>Bedrooms</label>
-            <input id="listing_bedrooms" placeholder="2" />
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Furnishing</label>
+            <select id="listing_furnishing" class="w-full rounded-lg border-slate-200"><option>Unfurnished</option><option>Semi</option><option>Furnished</option></select>
           </div>
         </div>
 
-        <div class="row" style="margin-top:12px">
-          <div class="col small">
-            <label>State</label>
-            <input id="listing_state" />
+        <!-- Location -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Address / Locality</label>
+            <input id="listing_address" class="w-full rounded-lg border-slate-200" placeholder="Full address" />
           </div>
-          <div class="col small">
-            <label>Locality</label>
-            <input id="listing_locality" />
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Project Name</label>
+            <input id="listing_project" class="w-full rounded-lg border-slate-200" placeholder="Project / Building name" />
           </div>
-          <div class="col">
-            <label>Project (optional)</label>
-            <input id="listing_project" />
-          </div>
-          <div class="col">
-            <label>Google Address</label>
-            <input id="listing_google_address" placeholder="Google formatted address"/>
+        </div>
+        
+        <!-- Hidden but required inputs for logic -->
+        <div class="hidden"><input id="listing_state"><input id="listing_locality"><input id="listing_google_address"></div>
+
+        <!-- Price & Area -->
+        <div class="p-5 bg-slate-50 rounded-xl border border-slate-100 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Price</label>
+              <input id="listing_price" placeholder="0" class="w-full rounded-md border-slate-200" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Unit</label>
+              <select id="listing_price_unit" class="w-full rounded-md border-slate-200"><option value="lakh">Lakh</option><option value="crore">Crore</option></select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Area</label>
+              <input id="listing_area" placeholder="0" class="w-full rounded-md border-slate-200" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Unit</label>
+              <select id="listing_area_unit" class="w-full rounded-md border-slate-200"><option value="Sq Mt">Sq Mt</option><option value="Sq Ft">Sq Ft</option></select>
+            </div>
           </div>
         </div>
 
-        <div class="row" style="margin-top:12px">
-          <div class="col">
-            <label>Address *</label>
-            <input id="listing_address" placeholder="Full address"/>
-          </div>
+        <!-- Contact Info -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <input id="listing_contact" placeholder="Owner Contact" class="rounded-lg border-slate-200" />
+          <input id="listing_url" placeholder="Listing URL (optional)" class="rounded-lg border-slate-200 md:col-span-2" />
+          <!-- Hidden fields -->
+          <div class="hidden"><input id="listing_deposit"><select id="listing_deposit_unit"></select></div>
         </div>
 
-        <div class="row" style="margin-top:12px">
-          <div class="col small">
-            <label>Area</label>
-            <input id="listing_area" placeholder="e.g. 120" />
-          </div>
-          <div class="col small">
-            <label>Area Unit</label>
-            <select id="listing_area_unit">
-              <option value="Sq Mt" selected>Sq Mt</option>
-              <option value="Sq Ft">Sq Ft</option>
-            </select>
-          </div>
-          <div class="col small">
-            <label>Price</label>
-            <input id="listing_price" placeholder="number"/>
-          </div>
-          <div class="col small">
-            <label>Price Unit</label>
-            <select id="listing_price_unit">
-              <option value="lakh">Lakh</option>
-              <option value="crore">Crore</option>
-              <option value="thousand">Thousand</option>
-            </select>
-          </div>
+        <div class="mb-8">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+          <textarea id="listing_description" rows="3" class="w-full rounded-lg border-slate-200" placeholder="Key highlights..."></textarea>
         </div>
 
-        <div class="row" style="margin-top:12px">
-          <div class="col small">
-            <label>Deposit</label>
-            <input id="listing_deposit" placeholder="number"/>
-          </div>
-          <div class="col small">
-            <label>Deposit Unit</label>
-            <select id="listing_deposit_unit"><option value="lakh">Lakh</option><option value="thousand">Thousand</option></select>
-          </div>
-          <div class="col small">
-            <label>Contact</label>
-            <input id="listing_contact" placeholder="phone"/>
-          </div>
-          <div class="col">
-            <label>Listing URL</label>
-            <input id="listing_url" placeholder="optional url"/>
-          </div>
-        </div>
-
-        <div style="margin-top:12px">
-          <label>Property Description *</label>
-          <textarea id="listing_description" placeholder="Description"></textarea>
-        </div>
-
-        <div style="margin-top:12px" class="row">
-          <button id="addListing" class="primary">Add Listing</button>
-          <button id="downloadListings" class="btn-ghost">Download backup.csv</button>
+        <div class="flex gap-4 pt-6 border-t border-slate-100">
+          <button id="addListing" class="primary bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md shadow-indigo-200 transition-all">
+            Add Listing
+          </button>
+          <button id="downloadListings" class="btn-ghost text-slate-600 hover:bg-slate-100 px-6 py-2.5 rounded-lg font-medium transition-colors">
+            Backup CSV
+          </button>
         </div>
       </div>
     </section>
 
-    <section id="page-data" class="card" style="display:none">
-      <h2>Manage Database</h2>
-      <div class="muted">View / filter / edit / delete data directly from Neon DB</div>
-
-      <div style="margin-top:12px" class="row">
-        <div style="width:240px">
-          <select id="csvSelect">
+    <!-- 3. DATA PAGE -->
+    <section id="page-data" class="hidden">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Database Explorer</h2>
+          <p class="text-slate-500 mt-1">Manage your raw data records.</p>
+        </div>
+        
+        <!-- Controls -->
+        <div class="flex flex-wrap gap-3">
+          <select id="csvSelect" class="bg-white border-slate-200 rounded-lg text-sm py-2 pr-8 shadow-sm">
             <option value="buyers.csv">Buyers Database</option>
             <option value="listings.csv">Listings Database</option>
-            <option value="matches.csv">Matches (Temporary)</option>
+            <option value="matches.csv">Matches (Temp)</option>
           </select>
-        </div>
-        <div style="flex:1">
-          <input id="csvFilterQuick" placeholder="Quick filter across all columns (single)"/>
-        </div>
-        <div class="controls">
-          <button id="refreshCsv" class="primary">Refresh Data</button>
-          <button id="downloadCsv" class="btn-ghost">Download CSV</button>
-          <button id="deleteSelected" class="danger">Delete selected</button>
+          <button id="refreshCsv" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-all">
+            <i class="ph ph-arrow-clockwise mr-1"></i> Refresh
+          </button>
+          <button id="deleteSelected" class="bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-medium transition-all">
+            <i class="ph ph-trash mr-1"></i> Delete
+          </button>
+          <button id="downloadCsv" class="hidden">Download</button> <!-- Kept for logic but hidden UI -->
         </div>
       </div>
 
-      <div class="filters-area">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div><strong>Filters</strong> <span class="muted">Add multiple filter rules. Choose AND/OR to combine.</span></div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button id="addDataFilterBtn" class="primary">+ Add Filter</button>
-            <label style="margin:0 6px">Combine:</label>
-            <select id="dataFilterMode"><option value="and">AND</option><option value="or">OR</option></select>
-            <button id="applyDataFilters" class="btn-ghost">Apply Filters</button>
-            <button id="clearDataFilters" class="btn-ghost">Clear</button>
+      <!-- Filters -->
+      <div class="bg-white rounded-xl border border-slate-200 p-4 mb-6 shadow-sm">
+        <div class="flex flex-wrap gap-4 items-center justify-between">
+          <div class="flex-1 min-w-[200px]">
+            <div class="relative">
+              <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input id="csvFilterQuick" placeholder="Search anything..." class="w-full pl-10 rounded-lg border-slate-200 text-sm py-2" />
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button id="addDataFilterBtn" class="text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-md text-sm font-medium transition-colors">+ Add Filter</button>
+            <div class="h-4 w-px bg-slate-200"></div>
+            <select id="dataFilterMode" class="text-sm border-none bg-transparent text-slate-500 font-medium focus:ring-0"><option value="and">AND</option><option value="or">OR</option></select>
+            <button id="applyDataFilters" class="text-slate-600 hover:text-indigo-600 text-sm font-medium px-2">Apply</button>
+            <button id="clearDataFilters" class="text-slate-400 hover:text-slate-600 text-sm px-2">Clear</button>
           </div>
         </div>
-        <div id="dataFiltersContainer" style="margin-top:10px"></div>
+        <div id="dataFiltersContainer" class="mt-3 space-y-2"></div>
       </div>
 
-      <div style="margin-top:14px; overflow:auto; max-height:420px">
-        <table>
-          <thead id="csvHead"></thead>
-          <tbody id="csvBody"></tbody>
-        </table>
+      <!-- Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table>
+            <thead id="csvHead"></thead>
+            <tbody id="csvBody"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
-    <section id="page-matches" class="card" style="display:none">
-      <h2>Matches</h2>
-      <div class="muted">Match Database data + Optional CSV uploads</div>
-
-      <div style="margin-top:12px" class="row">
-        <div style="width:260px">
-          <label>Upload extra buyers CSV (optional)</label>
-          <input type="file" id="uploadBuyers" accept=".csv" />
-          <div style="height:8px"></div>
-          <label>Upload extra listings CSV (optional)</label>
-          <input type="file" id="uploadListings" accept=".csv" />
+    <!-- 4. MATCHES PAGE -->
+    <section id="page-matches" class="hidden">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Match Results</h2>
+          <p class="text-slate-500 mt-1">AI-scored matches between Buyers and Listings.</p>
         </div>
-
-        <div style="flex:1">
-          <label>Min score threshold</label>
-          <input id="minScore" placeholder="e.g. 60" />
-          <div style="margin-top:8px" class="row">
-            <button id="mergeAndRun" class="primary">Merge & Run Matcher</button>
-            <button id="downloadMatchesBtn" class="btn-ghost">Download matches.csv</button>
-          </div>
+        
+        <div class="flex gap-3 items-center bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
+          <input id="minScore" placeholder="Min Score (60)" class="w-24 border-none bg-transparent text-sm focus:ring-0" />
+          <button id="mergeAndRun" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition-all">
+            Run Matcher
+          </button>
         </div>
       </div>
 
-      <div class="filters-area" style="margin-top:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div><strong>Match Filters</strong> <span class="muted">Add rules and filter results by fields or score.</span></div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button id="addMatchFilterBtn" class="primary">+ Add Match Filter</button>
-            <label style="margin:0 6px">Combine:</label>
-            <select id="matchFilterMode"><option value="and">AND</option><option value="or">OR</option></select>
-            <label style="margin-left:12px">Score between</label>
-            <input id="matchScoreMin" style="width:72px;margin-left:6px" placeholder="0" />
-            <input id="matchScoreMax" style="width:72px;margin-left:6px" placeholder="100" />
-            <button id="applyMatchFilters" class="btn-ghost">Apply</button>
-            <button id="clearMatchFilters" class="btn-ghost">Clear</button>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Sidebar Uploads -->
+        <div class="lg:col-span-1">
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-100">
+            <h3 class="font-semibold text-slate-800 mb-3 text-sm">Temporary Uploads</h3>
+            <p class="text-xs text-slate-500 mb-4">Upload CSVs to match against without saving to database.</p>
+            
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">Extra Buyers</label>
+                <input type="file" id="uploadBuyers" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">Extra Listings</label>
+                <input type="file" id="uploadListings" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+              </div>
+            </div>
+            
+            <!-- Hidden elements required by JS logic -->
+            <div class="hidden">
+               <button id="downloadMatchesBtn"></button>
+               <button id="addMatchFilterBtn"></button>
+               <select id="matchFilterMode"><option>AND</option></select>
+               <input id="matchScoreMin"><input id="matchScoreMax">
+               <button id="applyMatchFilters"></button><button id="clearMatchFilters"></button>
+               <div id="matchFiltersContainer"></div>
+            </div>
           </div>
         </div>
-        <div id="matchFiltersContainer" style="margin-top:10px"></div>
-      </div>
 
-      <div id="matchesContainer" style="margin-top:12px"></div>
+        <!-- Results Area -->
+        <div class="lg:col-span-2">
+          <div id="matchesContainer" class="space-y-4">
+            <div class="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+              <p class="text-slate-400">Run the matcher to see results here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <div style="height:28px"></div>
-  </div>
+  </main>
 
   <script>
   // ---- UTILITIES ----
@@ -485,6 +549,193 @@
       }
     }
     return out;
+  }
+
+  // ---- MATCHER LOGIC (Missing Part) ----
+  // ---- ADVANCED MATCHER LOGIC (Weighted & Realistic) ----
+function runMatcher(buyersArr, listingsArr, minScore=60){
+  const out = [];
+
+  // Helper: Normalize strings (remove spaces/symbols, lowercase)
+  // e.g., "3 BHK Apartment" -> "3bhkapartment"
+  const clean = (str) => (str || '').toLowerCase().replace(/[\s\W_]+/g, '');
+  
+  // Helper: Tokenize (split into words for fuzzy search)
+  // e.g. "Andheri West, Mumbai" -> ["andheri", "west", "mumbai"]
+  const tokens = (str) => (str || '').toLowerCase().split(/[\s,]+/).filter(s => s.length > 2);
+
+  // Pre-process Listings to avoid re-calculating inside the loop
+  const listingsPrepared = (listingsArr||[]).map(l => ({
+    raw: l,
+    // Data normalization
+    dealType: clean(l.deal_type), // sell/rent
+    type: clean(l.property_type), // 2bhk
+    price: parseNumber(l.price) || parseNumber(l.price_raw) || 0,
+    // Location tokens (City + Locality + Address)
+    locTokens: tokens((l.locality||'') + ' ' + (l.city||'') + ' ' + (l.state||'') + ' ' + (l.address||'')),
+    // Description text for keyword search
+    descText: ((l.description||'') + ' ' + (l.project||'') + ' ' + (l.address||'')).toLowerCase()
+  }));
+
+  for(const b of (buyersArr||[])){
+    const bId = b.id || uid('buyer');
+    
+    // Buyer Requirements
+    const bService = clean(b.service_type); // buy/rent
+    const bType = clean(b.property_type);   // 2bhk
+    const bBudget = b.budget_rupees || parseNumber(b.budget_raw) || 0;
+    
+    // Buyer Location Preference (split into checking words)
+    const bLocTokens = tokens((b.city||'') + ' ' + (b.state||'') + ' ' + (b.preferred_localities||''));
+    
+    // Buyer Keywords (Projects, Specifics)
+    const bKeywords = tokens((b.preferred_projects||'') + ' ' + (b.specific||''));
+
+    for(const l of listingsPrepared){
+      let totalScore = 0;
+      
+      // --- 1. THE KILL SWITCH (Deal Breakers) ---
+      // If Buyer wants to Rent but Listing is Sell -> SKIP immediately
+      // Map: 'buy' matches 'sell', 'rent' matches 'rent'
+      const isRentalMismatch = (bService.includes('rent') && !l.dealType.includes('rent'));
+      const isSaleMismatch = (bService.includes('buy') && !l.dealType.includes('sell'));
+      
+      if(isRentalMismatch || isSaleMismatch) continue; 
+
+      // --- 2. BUDGET SCORING (Max 30 Points) ---
+      // Real estate rule: Buyers rarely go above budget, but might go 10-20% higher for a perfect house.
+      // Sellers barely go below, but listings are negotiable.
+      if(bBudget > 0 && l.price > 0) {
+        // Calculate percentage difference
+        const diff = Math.abs(bBudget - l.price);
+        const percentDiff = diff / bBudget; // e.g., 0.10 (10%)
+        
+        if(l.price <= bBudget) {
+            // Under budget is great. Full points.
+            totalScore += 30; 
+        } else if(percentDiff <= 0.25) {
+            // Within 25% over budget (Negotiable range). 
+            // Linear drop: 25% over = 0 points. 0% over = 30 points.
+            // Formula: 30 * (1 - (diff / (bBudget * 0.25)))
+            const score = 30 * (1 - (diff / (bBudget * 0.25)));
+            totalScore += Math.max(0, score);
+        }
+        // If > 25% over budget, 0 points for budget.
+      } else {
+        // If no budget specified, give a neutral score
+        totalScore += 15; 
+      }
+
+      // --- 3. LOCATION SCORING (Max 30 Points) ---
+      // We check how many of the Buyer's location words appear in the Listing
+      if(bLocTokens.length > 0) {
+         const matches = bLocTokens.filter(token => l.locTokens.some(lt => lt.includes(token)));
+         if(matches.length > 0) {
+            // Full points if we matched city/locality
+            totalScore += 30;
+         }
+      } else {
+         totalScore += 10; // No preference specified
+      }
+
+      // --- 4. CONFIGURATION / TYPE SCORING (Max 25 Points) ---
+      // "3 BHK" matching "3 BHK"
+      if(bType && l.type) {
+        if(l.type.includes(bType) || bType.includes(l.type)) {
+            totalScore += 25;
+        } else {
+            // Partial match logic? (e.g. 3BHK buyer might look at 4BHK)
+            // For now, strict mismatch gets 0.
+        }
+      } else {
+        totalScore += 10; // No type specified
+      }
+
+      // --- 5. KEYWORD / DESCRIPTION BONUS (Max 15 Points) ---
+      // Checks for specific projects, "Sea View", "Furnished", etc.
+      let keywordHits = 0;
+      bKeywords.forEach(kw => {
+        if(l.descText.includes(kw) || l.locTokens.includes(kw)) keywordHits++;
+      });
+      // Cap bonus at 15 points (5 points per keyword match)
+      totalScore += Math.min(15, keywordHits * 5);
+
+
+      // --- FINAL SAVE ---
+      // Round score
+      const finalScore = Math.round(totalScore);
+
+      if(finalScore >= minScore){
+        out.push({
+          buyer_id: bId, 
+          buyer_name: b.name||'', 
+          listing_id: l.raw.id||'', 
+          listing_title: l.raw.project || l.raw.address || l.raw.description || 'Property', 
+          listing_price: l.price, 
+          listing_location: l.raw.locality || l.raw.state || '', 
+          listing_url: l.raw.url || '', 
+          score: finalScore
+        });
+      }
+    }
+  }
+
+  // Sort by Buyer ID, then by Score (Highest first)
+  out.sort((a,b) => {
+      if (a.buyer_id < b.buyer_id) return -1;
+      if (a.buyer_id > b.buyer_id) return 1;
+      return b.score - a.score;
+  });
+  
+  return out;
+}
+
+  function renderMatches(ms){
+    const cont = $('matchesContainer'); if(!cont) return;
+    cont.innerHTML='';
+    if(!ms || !ms.length){ 
+        cont.innerHTML = '<div class="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300"><p class="text-slate-400">No matches found.</p></div>'; 
+        return; 
+    }
+
+    const grouped = {};
+    ms.forEach(m => { grouped[m.buyer_id] = grouped[m.buyer_id] || { buyer_name: m.buyer_name, rows: [] }; grouped[m.buyer_id].rows.push(m); });
+
+    for(const bid of Object.keys(grouped)){
+      const g = grouped[bid];
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-4';
+      
+      card.innerHTML = `
+        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+            <div>
+                <h3 class="font-bold text-lg text-slate-800">${escapeHtml(g.buyer_name||'(Unnamed)')}</h3>
+                <span class="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">ID: ${bid}</span>
+            </div>
+            <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">${g.rows.length} Matches</div>
+        </div>
+      `;
+      
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+      
+      g.rows.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'border border-slate-200 rounded-lg p-3 hover:border-indigo-300 hover:shadow-md transition-all bg-slate-50/50';
+        item.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded">${r.score}% Match</span>
+                <span class="font-bold text-slate-900">₹${r.listing_price || '?'}</span>
+            </div>
+            <div class="mb-2">
+                <a href="${r.listing_url||'#'}" target="_blank" class="text-sm font-semibold text-indigo-600 hover:underline line-clamp-1">${escapeHtml(r.listing_title || 'Untitled')}</a>
+                <p class="text-xs text-slate-500 mt-1 line-clamp-1">${escapeHtml(r.listing_location)}</p>
+            </div>
+        `;
+        grid.appendChild(item);
+      });
+      card.appendChild(grid); cont.appendChild(card);
+    }
   }
 
   // ---- FETCH FROM SERVER ----
