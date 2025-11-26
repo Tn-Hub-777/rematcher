@@ -11,11 +11,27 @@
 
   <style>
     body { font-family: 'Inter', sans-serif; }
-    /* Navigation Active State */
-    nav button.active { background-color: #4f46e5; color: white; border-color: transparent; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
     
-    /* Input Focus Styles */
-    input:focus, select:focus, textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); outline: none; }
+    /* Navigation Active State */
+    nav button.active { 
+      background-color: #4f46e5; 
+      color: white; 
+      border-color: transparent; 
+      font-weight: 600; 
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); 
+    }
+    
+    /* Input Focus Styles & Borders */
+    input, select, textarea {
+      border-width: 1px;
+      border-color: #cbd5e1; /* slate-300 */
+      outline: none;
+      transition: all 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { 
+      border-color: #6366f1; 
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); 
+    }
     
     /* Animations */
     .animate-fade-in { animation: fadeIn 0.3s ease-out; }
@@ -54,23 +70,48 @@
         <h2 class="text-2xl font-bold text-slate-900 mb-6">Add New Buyer</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Client Name *</label><input id="buyer_name" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Full Name" /></div>
-          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mobile *</label><input id="buyer_mobile" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Primary Number" /></div>
-          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label><input id="buyer_email" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Optional" /></div>
-          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Service</label><select id="buyer_service_type" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"><option>Buy</option><option>Rent</option></select></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Client Name *</label><input id="buyer_name" class="w-full rounded-lg px-3 py-2 text-slate-700" placeholder="Full Name" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mobile *</label><input id="buyer_mobile" class="w-full rounded-lg px-3 py-2 text-slate-700" placeholder="Primary Number" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Second Mobile</label><input id="buyer_mobile2" class="w-full rounded-lg px-3 py-2 text-slate-700" placeholder="Optional" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label><input id="buyer_email" class="w-full rounded-lg px-3 py-2 text-slate-700" placeholder="Optional" /></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Country</label><select id="buyer_country" class="w-full rounded-lg px-3 py-2 bg-white"><option>India</option></select></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">State</label><input id="buyer_state" class="w-full rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">City</label><input id="buyer_city" class="w-full rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Service</label><select id="buyer_service_type" class="w-full rounded-lg px-3 py-2 bg-white"><option>Buy</option><option>Rent</option></select></div>
         </div>
 
         <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 mb-6">
           <h3 class="text-sm font-bold text-indigo-600 uppercase tracking-wide mb-4">Requirements</h3>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div><label class="block text-xs font-medium text-slate-700 mb-1">Type</label><input id="buyer_property_type" placeholder="e.g. 2BHK" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-xs font-medium text-slate-700 mb-1">Budget</label><input id="buyer_budget" placeholder="0" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-xs font-medium text-slate-700 mb-1">Unit</label><select id="buyer_budget_unit" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm bg-white"><option value="lakh">Lakh</option><option value="crore">Crore</option></select></div>
-            <div><label class="block text-xs font-medium text-slate-700 mb-1">Localities</label><input id="buyer_localities" placeholder="Comma separated..." class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Type</label><input id="buyer_property_type" placeholder="e.g. 2BHK" class="w-full rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Sale Type</label><select id="buyer_sale_type" class="w-full rounded-md px-3 py-2 text-sm bg-white"><option>Sale</option><option>Rent</option></select></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Furnishing</label><select id="buyer_furnishing" class="w-full rounded-md px-3 py-2 text-sm bg-white"><option>Any</option><option>Furnished</option><option>Semi-Furnished</option><option>Un-Furnished</option></select></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Possession Status</label><select id="buyer_possession_status" class="w-full rounded-md px-3 py-2 text-sm bg-white"><option>Ready</option><option>Under Construction</option></select></div>
+            
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Possession Time</label><select id="buyer_possession_time" class="w-full rounded-md px-3 py-2 text-sm bg-white"><option>Immediate</option><option>3 Months</option><option>6 Months</option></select></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Budget</label><input id="buyer_budget" placeholder="0" class="w-full rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Unit</label><select id="buyer_budget_unit" class="w-full rounded-md px-3 py-2 text-sm bg-white"><option value="lakh">Lakh</option><option value="crore">Crore</option><option value="thousand">Thousand</option></select></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Area / Unit</label><div class="flex gap-2"><input id="buyer_area" placeholder="Size" class="w-2/3 rounded-md px-3 py-2 text-sm" /><select id="buyer_area_unit" class="w-1/3 rounded-md px-3 py-2 text-sm bg-white"><option>Sq Mt</option><option>Sq Ft</option></select></div></div>
           </div>
         </div>
 
-        <div class="hidden"><input id="buyer_mobile2"><input id="buyer_state"><input id="buyer_city"><input id="buyer_projects"><input id="buyer_lead_source"><input id="buyer_referral"><input id="buyer_specific"><select id="buyer_country"><option>India</option></select><select id="buyer_sale_type"><option>Sale</option></select><select id="buyer_furnishing"><option>Furnished</option></select><select id="buyer_possession_status"><option>Ready</option></select><select id="buyer_possession_time"><option>Immediate</option></select><input id="buyer_area"><select id="buyer_area_unit"><option>Sq Mt</option></select><select id="buyer_nri"><option>no</option></select><select id="buyer_loan_required"><option>no</option></select><select id="buyer_purpose"><option>Self</option></select></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Preferred Localities</label><input id="buyer_localities" placeholder="Comma separated..." class="w-full rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Preferred Projects</label><input id="buyer_projects" placeholder="Specific project names..." class="w-full rounded-lg px-3 py-2" /></div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Lead Source</label><input id="buyer_lead_source" class="w-full rounded-lg px-3 py-2 text-sm" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Referral</label><input id="buyer_referral" class="w-full rounded-lg px-3 py-2 text-sm" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">NRI?</label><select id="buyer_nri" class="w-full rounded-lg px-3 py-2 text-sm bg-white"><option value="no">No</option><option value="yes">Yes</option></select></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Loan?</label><select id="buyer_loan_required" class="w-full rounded-lg px-3 py-2 text-sm bg-white"><option value="no">No</option><option value="yes">Yes</option></select></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Purpose</label><select id="buyer_purpose" class="w-full rounded-lg px-3 py-2 text-sm bg-white"><option>Self Use</option><option>Investment</option></select></div>
+        </div>
+
+        <div class="mb-8"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Specific Notes</label><textarea id="buyer_specific" rows="3" class="w-full rounded-lg px-3 py-2" placeholder="Any other requirements..."></textarea></div>
 
         <button id="addBuyer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all">Add Buyer to Database</button>
       </div>
@@ -79,17 +120,40 @@
     <section id="page-listings" class="hidden animate-fade-in">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:p-8">
         <h2 class="text-2xl font-bold text-slate-900 mb-6">Add Listing</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Address *</label><input id="listing_address" class="w-full border border-slate-300 rounded-lg px-3 py-2" /></div>
-          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Property Type</label><input id="listing_property_type" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="3BHK, Villa" /></div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Deal Type</label><select id="listing_deal_type" class="w-full rounded-lg px-3 py-2 bg-white"><option>Sell</option><option>Rent</option></select></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Property Type</label><input id="listing_property_type" class="w-full rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bedrooms</label><input id="listing_bedrooms" class="w-full rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Furnishing</label><select id="listing_furnishing" class="w-full rounded-lg px-3 py-2 bg-white"><option>Unfurnished</option><option>Semi</option><option>Furnished</option></select></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-           <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Price</label><input id="listing_price" class="w-full border border-slate-300 rounded-lg px-3 py-2" /></div>
-           <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Unit</label><select id="listing_price_unit" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"><option value="lakh">Lakh</option><option value="crore">Crore</option></select></div>
-           <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contact</label><input id="listing_contact" class="w-full border border-slate-300 rounded-lg px-3 py-2" /></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">State</label><input id="listing_state" class="w-full rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Locality</label><input id="listing_locality" class="w-full rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Project Name</label><input id="listing_project" class="w-full rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Google Address</label><input id="listing_google_address" class="w-full rounded-lg px-3 py-2" /></div>
         </div>
         
-        <div class="hidden"><select id="listing_deal_type"><option>Sell</option></select><input id="listing_bedrooms"><select id="listing_furnishing"><option>Unfurnished</option></select><input id="listing_state"><input id="listing_locality"><input id="listing_project"><input id="listing_google_address"><input id="listing_area"><select id="listing_area_unit"><option>Sq Mt</option></select><input id="listing_deposit"><select id="listing_deposit_unit"><option>Lakh</option></select><input id="listing_url"><textarea id="listing_description"></textarea></div>
+        <div class="mb-6"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Address *</label><input id="listing_address" class="w-full rounded-lg px-3 py-2" /></div>
+
+        <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Price</label><input id="listing_price" placeholder="0" class="w-full rounded-md px-3 py-2" /></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Unit</label><select id="listing_price_unit" class="w-full rounded-md px-3 py-2 bg-white"><option value="lakh">Lakh</option><option value="crore">Crore</option></select></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Area</label><input id="listing_area" placeholder="0" class="w-full rounded-md px-3 py-2" /></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Unit</label><select id="listing_area_unit" class="w-full rounded-md px-3 py-2 bg-white"><option value="Sq Mt">Sq Mt</option><option value="Sq Ft">Sq Ft</option></select></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Deposit</label><input id="listing_deposit" placeholder="0" class="w-full rounded-md px-3 py-2" /></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Deposit Unit</label><select id="listing_deposit_unit" class="w-full rounded-md px-3 py-2 bg-white"><option value="lakh">Lakh</option><option value="thousand">Thousand</option></select></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Owner Contact</label><input id="listing_contact" class="w-full rounded-lg px-3 py-2" /></div>
+          <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Listing URL</label><input id="listing_url" class="w-full rounded-lg px-3 py-2" /></div>
+        </div>
+        
+        <div class="mb-8"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Description</label><textarea id="listing_description" rows="3" class="w-full rounded-lg px-3 py-2"></textarea></div>
 
         <button id="addListing" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all">Add Listing to Database</button>
       </div>
@@ -120,7 +184,7 @@
                  <button id="addDataFilterBtn" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md">+ Add Rule</button>
                  <div class="w-px h-4 bg-slate-200 mx-1"></div>
                  <span class="text-xs text-slate-500 font-medium">Match:</span>
-                 <select id="dataFilterMode" class="text-xs border-slate-200 rounded bg-slate-50 py-1"><option value="and">ALL (AND)</option><option value="or">ANY (OR)</option></select>
+                 <select id="dataFilterMode" class="text-xs border rounded bg-slate-50 py-1"><option value="and">ALL (AND)</option><option value="or">ANY (OR)</option></select>
                  <button id="applyDataFilters" class="text-xs font-bold text-white bg-slate-700 hover:bg-slate-800 px-3 py-1.5 rounded-md">Apply</button>
                  <button id="clearDataFilters" class="text-xs font-bold text-slate-500 hover:text-slate-700 px-2">Reset</button>
               </div>
@@ -130,10 +194,10 @@
 
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-4 border-b border-slate-100 flex gap-3 bg-slate-50">
-                <select id="csvSelect" class="border-slate-200 border rounded-lg text-sm shadow-sm p-2"><option value="buyers.csv">View Buyers</option><option value="listings.csv">View Listings</option><option value="matches.csv">View Matches</option></select>
+                <select id="csvSelect" class="border rounded-lg text-sm shadow-sm p-2"><option value="buyers.csv">View Buyers</option><option value="listings.csv">View Listings</option><option value="matches.csv">View Matches</option></select>
                 <button id="refreshCsv" class="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Refresh Table</button>
                 <div class="flex-1"></div>
-                <input id="csvFilterQuick" placeholder="Quick Search..." class="border border-slate-200 rounded-lg text-sm px-3 py-2 w-64" />
+                <input id="csvFilterQuick" placeholder="Quick Search..." class="border rounded-lg text-sm px-3 py-2 w-64" />
             </div>
             <div class="overflow-x-auto"><table class="w-full"><thead id="csvHead"></thead><tbody id="csvBody"></tbody></table></div>
         </div>
@@ -158,10 +222,9 @@
                     </div>
                     <div id="matchFiltersContainer" class="space-y-2 mb-3"></div>
                     <button id="addMatchFilterBtn" class="w-full py-1.5 border border-dashed border-slate-300 rounded text-xs text-slate-500 hover:bg-slate-50 mb-3">+ Add Filter Rule</button>
-                    
                     <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-                        <select id="matchFilterMode" class="text-xs border-slate-200 rounded"><option value="and">Match ALL</option><option value="or">Match ANY</option></select>
-                        <button id="applyMatchFilters" class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded">Apply Filters</button>
+                        <select id="matchFilterMode" class="text-xs border rounded"><option value="and">Match ALL</option><option value="or">Match ANY</option></select>
+                        <button id="applyMatchFilters" class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded">Apply</button>
                     </div>
                 </div>
                 <div class="pt-4 border-t border-slate-100">
@@ -202,7 +265,7 @@
         const row = document.createElement('div'); 
         row.className = 'flex gap-2 items-center animate-fade-in';
         const colSel = document.createElement('select');
-        colSel.className = 'border border-slate-300 rounded text-xs p-1.5 max-w-[120px] focus:border-indigo-500 focus:ring-indigo-500';
+        colSel.className = 'border border-slate-300 rounded text-xs p-1.5 max-w-[120px] focus:border-indigo-500';
         columns.forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; colSel.appendChild(opt); });
         const opSel = document.createElement('select');
         opSel.className = 'border border-slate-300 rounded text-xs p-1.5 bg-slate-50';
@@ -266,34 +329,24 @@
         } catch(e) { console.error("Load error", e); }
     }
 
-    // --- NEW: ROW EDIT FUNCTION ---
+    // --- ROW EDIT FUNCTION (Back by popular demand) ---
     async function handleEditRow(btn) {
         const idx = parseInt(btn.getAttribute('data-idx'));
         const currentCsv = $('csvSelect').value;
-         $('refreshCsv').click();
-        
-        // Identify which array we are editing
         let sourceArray = [];
         if (currentCsv === 'buyers.csv') sourceArray = baseBuyers;
         else if (currentCsv === 'listings.csv') sourceArray = baseListings;
         else return alert("Cannot edit matches directly. Clear and re-run.");
 
-        // Find Row
-        const row = sourceArray[idx]; 
-        // NOTE: When using filtered view, index might mismatch if not careful. 
-        // Better to find by ID if available, but filtered view uses csvRaw.
-        // Let's use csvRaw for safety as it reflects current view.
-        const viewRow = csvRaw[idx]; // This is safe with current renderer logic
-        
-        if (!viewRow || !viewRow.id) return alert("Row not found or ID missing.");
+        const viewRow = csvRaw[idx]; 
+        if (!viewRow || !viewRow.id) return alert("Row not found.");
 
         const editedRow = { ...viewRow };
-        delete editedRow.__index; // Remove internal index before edit loop
+        delete editedRow.__index; 
 
         let hasChanges = false;
-        // Simple Prompt Loop for editing
         for (const key of Object.keys(editedRow)) {
-            if (key === 'id') continue; // Don't edit ID
+            if (key === 'id') continue; 
             const oldVal = editedRow[key] || '';
             const newVal = prompt(`Edit ${key}:`, oldVal);
             if (newVal !== null && newVal !== oldVal) {
@@ -302,9 +355,8 @@
             }
         }
 
-        if (!hasChanges) return; // Cancelled
+        if (!hasChanges) return; 
 
-        // Save to DB
         try {
             const apiEndpoint = currentCsv === 'buyers.csv' ? '/api/buyers' : '/api/listings';
             const res = await fetch(`${apiEndpoint}/${viewRow.id}`, {
@@ -312,17 +364,12 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editedRow)
             });
-
             if (res.ok) {
-                alert("Row updated successfully!");
-                await loadDefaults(); // Reload DB
-                $('refreshCsv').click(); // Refresh Table View
-            } else {
-                alert("Server failed to save.");
-            }
-        } catch (e) {
-            console.error(e); alert("Network Error saving edit.");
-        }
+                alert("Row updated!");
+                await loadDefaults(); 
+                $('refreshCsv').click(); 
+            } else { alert("Server failed to save."); }
+        } catch (e) { console.error(e); alert("Network Error."); }
     }
 
     // --- MATCHER ---
@@ -362,7 +409,7 @@
     // --- RENDERERS ---
     function renderMatches(ms){
         const cont = $('matchesContainer'); cont.innerHTML='';
-        if(!ms.length) { cont.innerHTML = '<div class="p-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">No matches found. Try lowering score.</div>'; return; }
+        if(!ms.length) { cont.innerHTML = '<div class="p-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">No matches found.</div>'; return; }
         const grouped = {}; ms.forEach(m => { grouped[m.buyer_id] = grouped[m.buyer_id] || { buyer_name: m.buyer_name, rows: [] }; grouped[m.buyer_id].rows.push(m); });
         Object.keys(grouped).forEach(bid => {
             const g = grouped[bid];
@@ -385,30 +432,22 @@
         head.innerHTML = ''; body.innerHTML = '';
         if(!data.length) { head.innerHTML='<tr><td class="p-4 text-slate-500">Empty Table</td></tr>'; return; }
         
-        // Get Cols
         const cols = Object.keys(data[0]).filter(k => k !== 'doc');
         
-        // HEADER
         head.innerHTML = `<tr>
             ${cols.map(c => `<th class="bg-slate-50 text-slate-600 font-bold text-left p-3 border-b text-xs uppercase">${c}</th>`).join('')}
             <th class="bg-slate-50 text-slate-600 font-bold text-left p-3 border-b text-xs uppercase">Action</th>
         </tr>`;
         
-        // BODY
         const filterQuick = ($('csvFilterQuick') ? $('csvFilterQuick').value : '').toLowerCase();
         data.forEach((row, idx) => {
             const rowVals = cols.map(c => (row[c]||'').toString()).join(' ').toLowerCase();
             if(filterQuick && !rowVals.includes(filterQuick)) return;
-            
-            // Store reference in raw for easy editing
             csvRaw[idx] = row; 
-
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 ${cols.map(c => `<td class="p-3 border-b text-sm text-slate-700">${escapeHtml(row[c])}</td>`).join('')}
-                <td class="p-3 border-b text-sm">
-                    <button class="edit-btn text-indigo-600 hover:text-indigo-900 font-bold text-xs" data-idx="${idx}">Edit</button>
-                </td>
+                <td class="p-3 border-b text-sm"><button class="edit-btn text-indigo-600 hover:text-indigo-900 font-bold text-xs" data-idx="${idx}">Edit</button></td>
             `;
             body.appendChild(tr);
         });
@@ -418,11 +457,9 @@
     window.addEventListener('DOMContentLoaded', async () => {
         await loadDefaults();
 
-        // GLOBAL EVENT LISTENER (Event Delegation)
+        // EVENT DELEGATION FOR ROW EDIT
         document.body.addEventListener('click', (e) => {
-            if (e.target.classList.contains('edit-btn')) {
-                handleEditRow(e.target);
-            }
+            if (e.target.classList.contains('edit-btn')) handleEditRow(e.target);
         });
 
         document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
@@ -437,7 +474,6 @@
         // Filter Wiring
         $('addDataFilterBtn').onclick = () => {
             if(!csvRaw.length && !baseBuyers.length && !baseListings.length) return alert('Load data first');
-            // If csvRaw is empty, assume first load of buyers
             const sample = csvRaw.length ? csvRaw[0] : (baseBuyers[0] || baseListings[0] || {});
             createFilterRow($('dataFiltersContainer'), Object.keys(sample), dataFilters);
         };
@@ -449,7 +485,6 @@
         };
         $('clearDataFilters').onclick = () => { dataFilters = []; $('dataFiltersContainer').innerHTML=''; $('applyDataFilters').click(); };
 
-        // Match Filter Wiring
         $('addMatchFilterBtn').onclick = () => {
             if(!matches.length) return alert("Run matcher first");
             createFilterRow($('matchFiltersContainer'), Object.keys(matches[0]), matchFilters);
