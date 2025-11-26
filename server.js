@@ -4,127 +4,98 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-
-// 1. Setup Port (Render sets process.env.PORT automatically)
 const PORT = process.env.PORT || 3000;
 
-// 2. Middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static('public')); // Serves your HTML/JS files
+app.use(bodyParser.json({ limit: '10mb' })); // Increased limit for bulk uploads
+app.use(express.static('public'));
 
-// 3. Database Connection
-// Uses the Cloud variable if available, otherwise falls back to local string
-const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_CqK0Ota5HrbE@ep-hidden-bush-aepmoy8b-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+const connectionString = process.env.DATABASE_URL || 'postgres://neondb_owner:YOUR_NEON_STRING_HERE';
 
 const pool = new Pool({
   connectionString,
-  ssl: { rejectUnauthorized: false } // Required for Neon
+  ssl: { rejectUnauthorized: false }
 });
 
-// --- API ROUTES ---
+// --- HELPER: GENERIC CRUD ---
+const createRoutes = (table) => {
+    // GET ALL
+    app.get(`/api/${table}`, async (req, res) => {
+        try {
+            const result = await pool.query(`SELECT doc FROM ${table}`);
+            res.json(result.rows.map(r => r.doc));
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
 
-// GET buyers
-app.get('/api/buyers', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT doc FROM buyers');
-    const cleanData = result.rows.map(row => row.doc);
-    res.json(cleanData);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
+    // ADD / UPDATE SINGLE
+    app.post(`/api/${table}`, async (req, res) => {
+        try {
+            const record = req.body;
+            await pool.query(
+                `INSERT INTO ${table} (id, doc) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2`, 
+                [record.id, record]
+            );
+            res.json({ success: true });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
 
-// ADD buyer
-app.post('/api/buyers', async (req, res) => {
-  try {
-    const record = req.body;
-    await pool.query(
-      'INSERT INTO buyers (id, doc) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2', 
-      [record.id, record]
-    );
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// GET listings
-app.get('/api/listings', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT doc FROM listings');
-    const cleanData = result.rows.map(row => row.doc);
-    res.json(cleanData);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// ADD listing
-app.post('/api/listings', async (req, res) => {
-  try {
-    const record = req.body;
-    await pool.query(
-      'INSERT INTO listings (id, doc) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2', 
-      [record.id, record]
-    );
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// ... existing routes ...
-
-// 5. DELETE a buyer
-app.delete('/api/buyers/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    // Run SQL to remove from Neon
-    await pool.query('DELETE FROM buyers WHERE id = $1', [id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Delete Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 6. DELETE a listing
-app.delete('/api/listings/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    await pool.query('DELETE FROM listings WHERE id = $1', [id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Delete Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ... existing DELETE routes ...
-
-// 7. EDIT (UPDATE) a buyer
-app.put('/api/buyers/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updatedRecord = req.body; // This is the full new data
+    // DELETE SINGLE
+    app.delete(`/api/${table}/:id`, async (req, res) => {
+        try {
+            await pool.query(`DELETE FROM ${table} WHERE id = $1`, [req.params.id]);
+            res.json({ success: true });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
     
-    // We update the 'doc' column with the new JSON object
-    await pool.query('UPDATE buyers SET doc = $1 WHERE id = $2', [updatedRecord, id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Update Error:", err);
-    res.status(500).json({ error: err.message });
-  }
+    // PUT (Update)
+    app.put(`/api/${table}/:id`, async (req, res) => {
+        try {
+            const { id } = req.params;
+            const record = req.body;
+            await pool.query(`UPDATE ${table} SET doc = $1 WHERE id = $2`, [record, id]);
+            res.json({ success: true });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    // --- NEW: CLEAR TABLE (DANGEROUS) ---
+    app.delete(`/api/${table}_clear/all`, async (req, res) => {
+        try {
+            await pool.query(`TRUNCATE TABLE ${table}`);
+            res.json({ success: true, message: `Table ${table} cleared` });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+};
+
+// Create standard routes for all 3 tables
+createRoutes('buyers');
+createRoutes('listings');
+createRoutes('matches');
+
+// --- SPECIAL: BULK SAVE MATCHES ---
+app.post('/api/matches/bulk', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const matches = req.body; // Expecting Array
+        await client.query('BEGIN');
+        // Optional: Clear old matches first? Uncomment next line if you want to replace matches every run
+        // await client.query('TRUNCATE TABLE matches');
+        
+        for (const m of matches) {
+            await client.query(
+                `INSERT INTO matches (id, doc) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2`,
+                [m.id, m]
+            );
+        }
+        await client.query('COMMIT');
+        res.json({ success: true, count: matches.length });
+    } catch (e) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: e.message });
+    } finally {
+        client.release();
+    }
 });
 
-// 8. EDIT (UPDATE) a listing
-app.put('/api/listings/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updatedRecord = req.body;
-    
-    await pool.query('UPDATE listings SET doc = $1 WHERE id = $2', [updatedRecord, id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Update Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-// ... app.listen ...
-// --- START SERVER ---
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });

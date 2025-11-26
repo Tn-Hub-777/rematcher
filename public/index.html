@@ -3,1110 +3,497 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>RE Matcher — Pro Dashboard</title>
-  
-  <!-- 1. Tailwind CSS (The engine for the fresh look) -->
+  <title>RE Matcher — Pro DB</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- 2. Google Fonts (Inter) -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- 3. Icons (Phosphor) -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-  <!-- 4. PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-  <!-- 5. Your App Logic -->
-  <script src="src/app.js" defer></script>
-
   <style>
-    /* --- CUSTOM OVERRIDES TO MATCH YOUR EXISTING JS --- */
     body { font-family: 'Inter', sans-serif; }
+    /* Navigation Active State */
+    nav button.active { background-color: #4f46e5; color: white; border-color: transparent; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
     
-    /* 1. Navigation Active State */
-    nav button.active {
-      background-color: #4f46e5; /* Indigo-600 */
-      color: white;
-      border-color: transparent;
-      font-weight: 600;
-      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
-    }
-
-    /* 2. Dynamic Table Styling (Since JS creates clean HTML, we style it here) */
-    table { width: 100%; border-collapse: separate; border-spacing: 0; }
-    thead th { 
-      background: #f8fafc; 
-      color: #64748b; 
-      font-weight: 600; 
-      text-transform: uppercase; 
-      font-size: 0.75rem; 
-      letter-spacing: 0.05em; 
-      padding: 12px 24px; 
-      border-bottom: 1px solid #e2e8f0; 
-      text-align: left;
-    }
-    tbody td { 
-      padding: 16px 24px; 
-      border-bottom: 1px solid #f1f5f9; 
-      color: #334155; 
-      font-size: 0.875rem; 
-      background: white;
-      transition: background 0.2s;
-    }
-    tbody tr:hover td { background: #f8fafc; }
-    tbody tr:last-child td { border-bottom: none; }
-
-    /* 3. Dynamic Cards (Matches Tab) */
-    .card { 
-      background: white; 
-      border-radius: 1rem; 
-      padding: 1.5rem; 
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
-      border: 1px solid #e2e8f0;
-      margin-bottom: 1rem;
-    }
-    .listings-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    .listing {
-      background: #f8fafc;
-      padding: 1rem;
-      border-radius: 0.75rem;
-      border: 1px solid #e2e8f0;
-      transition: all 0.2s;
-    }
-    .listing:hover {
-      border-color: #cbd5e1;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
-
-    /* 4. Edit/Delete Buttons inside table */
-    button.edit {
-      background: white;
-      border: 1px solid #e2e8f0;
-      color: #475569;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    button.edit:hover {
-      border-color: #4f46e5;
-      color: #4f46e5;
-      background: #eef2ff;
-    }
+    /* Input Focus Styles */
+    input:focus, select:focus, textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); outline: none; }
+    
+    /* Animations */
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
-        <!-- Brand -->
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30">
             <i class="ph ph-house-line text-xl"></i>
           </div>
           <div>
             <h1 class="font-bold text-xl tracking-tight text-slate-900 leading-none">RE Matcher</h1>
-            <p class="text-xs text-slate-500 font-medium mt-0.5">Database Connected</p>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">Full Stack Database</p>
           </div>
         </div>
-
-        <!-- Navigation -->
         <div class="flex items-center gap-2">
-          <button data-route="buyers" class="active px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">
-            Buyers
-          </button>
-          <button data-route="listings" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">
-            Listings
-          </button>
+          <button data-route="buyers" class="active px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">Buyers</button>
+          <button data-route="listings" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">Listings</button>
           <div class="w-px h-6 bg-slate-200 mx-1"></div>
-          <button data-route="data" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">
-            Data View
-          </button>
-          <button data-route="matches" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">
-            Matches
-          </button>
+          <button data-route="data" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">Database Tools</button>
+          <button data-route="matches" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all">Matches</button>
         </div>
       </div>
     </div>
   </nav>
 
-  <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <!-- 1. BUYER FORM -->
     <section id="page-buyers" class="animate-fade-in">
-      <div class="flex justify-between items-end mb-6">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900">Add New Buyer</h2>
-          <p class="text-slate-500 mt-1">Enter client requirements to match against database.</p>
-        </div>
-      </div>
-
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:p-8">
-        <!-- Row 1 -->
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Add New Buyer</h2>
+        
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <div class="md:col-span-1">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Name <span class="text-red-500">*</span></label>
-            <input id="buyer_name" type="text" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 transition-colors" placeholder="Enter client name" />
-          </div>
-          <div class="md:col-span-1">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Mobile <span class="text-red-500">*</span></label>
-            <input id="buyer_mobile" type="text" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 transition-colors" placeholder="10-digit number" />
-          </div>
-          <div class="md:col-span-1">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Second Mobile</label>
-            <input id="buyer_mobile2" type="text" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
-          </div>
-          <div class="md:col-span-1">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Email</label>
-            <input id="buyer_email" type="text" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
-          </div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Client Name *</label><input id="buyer_name" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Full Name" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mobile *</label><input id="buyer_mobile" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Primary Number" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label><input id="buyer_email" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Optional" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Service</label><select id="buyer_service_type" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"><option>Buy</option><option>Rent</option></select></div>
         </div>
 
-        <!-- Row 2 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Country</label>
-            <select id="buyer_country" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"><option>India</option></select>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">State</label>
-            <input id="buyer_state" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500" />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">City</label>
-            <input id="buyer_city" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500" />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Service</label>
-            <select id="buyer_service_type" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
-              <option>Buy</option><option>Rent</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Row 3: Requirements -->
-        <div class="p-5 bg-slate-50 rounded-xl border border-slate-100 mb-6">
-          <h3 class="text-sm font-bold text-indigo-600 uppercase tracking-wide mb-4">Property Requirements</h3>
+        <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 mb-6">
+          <h3 class="text-sm font-bold text-indigo-600 uppercase tracking-wide mb-4">Requirements</h3>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Type</label>
-              <input id="buyer_property_type" placeholder="e.g. 2BHK" class="w-full rounded-md border-slate-200 text-sm" />
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Budget (Value)</label>
-              <input id="buyer_budget" placeholder="0" class="w-full rounded-md border-slate-200 text-sm" />
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Unit</label>
-              <select id="buyer_budget_unit" class="w-full rounded-md border-slate-200 text-sm">
-                <option value="lakh">Lakh</option><option value="crore">Crore</option><option value="thousand">Thousand</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Possession</label>
-              <select id="buyer_possession_status" class="w-full rounded-md border-slate-200 text-sm">
-                <option>Ready</option><option>Under Construction</option>
-              </select>
-            </div>
-            
-            <!-- Hidden inputs kept for compatibility but maybe less prominent -->
-            <div class="hidden">
-               <select id="buyer_sale_type"><option>Sale</option></select>
-               <select id="buyer_furnishing"><option>Furnished</option></select>
-               <select id="buyer_possession_time"><option>Immediate</option></select>
-               <input id="buyer_area" />
-               <select id="buyer_area_unit"><option>Sq Mt</option></select>
-            </div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Type</label><input id="buyer_property_type" placeholder="e.g. 2BHK" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Budget</label><input id="buyer_budget" placeholder="0" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Unit</label><select id="buyer_budget_unit" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm bg-white"><option value="lakh">Lakh</option><option value="crore">Crore</option></select></div>
+            <div><label class="block text-xs font-medium text-slate-700 mb-1">Localities</label><input id="buyer_localities" placeholder="Comma separated..." class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm" /></div>
           </div>
         </div>
 
-        <!-- Row 4 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Preferred Localities</label>
-            <input id="buyer_localities" placeholder="Comma separated areas..." class="w-full rounded-lg border-slate-200" />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Preferred Projects</label>
-            <input id="buyer_projects" placeholder="Specific project names..." class="w-full rounded-lg border-slate-200" />
-          </div>
-        </div>
+        <div class="hidden"><input id="buyer_mobile2"><input id="buyer_state"><input id="buyer_city"><input id="buyer_projects"><input id="buyer_lead_source"><input id="buyer_referral"><input id="buyer_specific"><select id="buyer_country"><option>India</option></select><select id="buyer_sale_type"><option>Sale</option></select><select id="buyer_furnishing"><option>Furnished</option></select><select id="buyer_possession_status"><option>Ready</option></select><select id="buyer_possession_time"><option>Immediate</option></select><input id="buyer_area"><select id="buyer_area_unit"><option>Sq Mt</option></select><select id="buyer_nri"><option>no</option></select><select id="buyer_loan_required"><option>no</option></select><select id="buyer_purpose"><option>Self</option></select></div>
 
-        <!-- Row 5: Extra Info -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <input id="buyer_lead_source" placeholder="Lead Source" class="rounded-lg border-slate-200 text-sm" />
-          <input id="buyer_referral" placeholder="Referral Name" class="rounded-lg border-slate-200 text-sm" />
-          <select id="buyer_nri" class="rounded-lg border-slate-200 text-sm"><option value="no">NRI: No</option><option value="yes">NRI: Yes</option></select>
-          <select id="buyer_loan_required" class="rounded-lg border-slate-200 text-sm"><option value="no">Loan: No</option><option value="yes">Loan: Yes</option></select>
-          <select id="buyer_purpose" class="rounded-lg border-slate-200 text-sm"><option>Self Use</option><option>Investment</option></select>
-        </div>
-
-        <!-- Textarea -->
-        <div class="mb-8">
-          <label class="block text-sm font-semibold text-slate-700 mb-2">Specific Requirements / Notes</label>
-          <textarea id="buyer_specific" rows="3" class="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Any other details..."></textarea>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-4 pt-6 border-t border-slate-100">
-          <button id="addBuyer" class="primary bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md shadow-indigo-200 transition-all">
-            Add Buyer to Database
-          </button>
-          <button id="downloadBuyers" class="btn-ghost text-slate-600 hover:bg-slate-100 px-6 py-2.5 rounded-lg font-medium transition-colors">
-            Backup CSV
-          </button>
-        </div>
+        <button id="addBuyer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all">Add Buyer to Database</button>
       </div>
     </section>
 
-    <!-- 2. LISTING FORM PAGE -->
-    <section id="page-listings" class="hidden">
-      <div class="flex justify-between items-end mb-6">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900">Add Property Listing</h2>
-          <p class="text-slate-500 mt-1">Add inventory to be matched with buyers.</p>
-        </div>
-      </div>
-
+    <section id="page-listings" class="hidden animate-fade-in">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:p-8">
-        <!-- Property Basics -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Deal Type</label>
-            <select id="listing_deal_type" class="w-full rounded-lg border-slate-200"><option>Sell</option><option>Rent</option></select>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Property Type</label>
-            <input id="listing_property_type" class="w-full rounded-lg border-slate-200" placeholder="Apartment, Villa..." />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Bedrooms</label>
-            <input id="listing_bedrooms" class="w-full rounded-lg border-slate-200" placeholder="e.g. 3" />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Furnishing</label>
-            <select id="listing_furnishing" class="w-full rounded-lg border-slate-200"><option>Unfurnished</option><option>Semi</option><option>Furnished</option></select>
-          </div>
-        </div>
-
-        <!-- Location -->
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Add Listing</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Address / Locality</label>
-            <input id="listing_address" class="w-full rounded-lg border-slate-200" placeholder="Full address" />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Project Name</label>
-            <input id="listing_project" class="w-full rounded-lg border-slate-200" placeholder="Project / Building name" />
-          </div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Address *</label><input id="listing_address" class="w-full border border-slate-300 rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Property Type</label><input id="listing_property_type" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="3BHK, Villa" /></div>
         </div>
-        
-        <!-- Hidden but required inputs for logic -->
-        <div class="hidden"><input id="listing_state"><input id="listing_locality"><input id="listing_google_address"></div>
-
-        <!-- Price & Area -->
-        <div class="p-5 bg-slate-50 rounded-xl border border-slate-100 mb-6">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Price</label>
-              <input id="listing_price" placeholder="0" class="w-full rounded-md border-slate-200" />
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Unit</label>
-              <select id="listing_price_unit" class="w-full rounded-md border-slate-200"><option value="lakh">Lakh</option><option value="crore">Crore</option></select>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Area</label>
-              <input id="listing_area" placeholder="0" class="w-full rounded-md border-slate-200" />
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Unit</label>
-              <select id="listing_area_unit" class="w-full rounded-md border-slate-200"><option value="Sq Mt">Sq Mt</option><option value="Sq Ft">Sq Ft</option></select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Contact Info -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <input id="listing_contact" placeholder="Owner Contact" class="rounded-lg border-slate-200" />
-          <input id="listing_url" placeholder="Listing URL (optional)" class="rounded-lg border-slate-200 md:col-span-2" />
-          <!-- Hidden fields -->
-          <div class="hidden"><input id="listing_deposit"><select id="listing_deposit_unit"></select></div>
+           <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Price</label><input id="listing_price" class="w-full border border-slate-300 rounded-lg px-3 py-2" /></div>
+           <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Unit</label><select id="listing_price_unit" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"><option value="lakh">Lakh</option><option value="crore">Crore</option></select></div>
+           <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contact</label><input id="listing_contact" class="w-full border border-slate-300 rounded-lg px-3 py-2" /></div>
         </div>
+        
+        <div class="hidden"><select id="listing_deal_type"><option>Sell</option></select><input id="listing_bedrooms"><select id="listing_furnishing"><option>Unfurnished</option></select><input id="listing_state"><input id="listing_locality"><input id="listing_project"><input id="listing_google_address"><input id="listing_area"><select id="listing_area_unit"><option>Sq Mt</option></select><input id="listing_deposit"><select id="listing_deposit_unit"><option>Lakh</option></select><input id="listing_url"><textarea id="listing_description"></textarea></div>
 
-        <div class="mb-8">
-          <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
-          <textarea id="listing_description" rows="3" class="w-full rounded-lg border-slate-200" placeholder="Key highlights..."></textarea>
-        </div>
-
-        <div class="flex gap-4 pt-6 border-t border-slate-100">
-          <button id="addListing" class="primary bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md shadow-indigo-200 transition-all">
-            Add Listing
-          </button>
-          <button id="downloadListings" class="btn-ghost text-slate-600 hover:bg-slate-100 px-6 py-2.5 rounded-lg font-medium transition-colors">
-            Backup CSV
-          </button>
-        </div>
+        <button id="addListing" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all">Add Listing to Database</button>
       </div>
     </section>
 
-    <!-- 3. DATA PAGE -->
-    <section id="page-data" class="hidden">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900">Database Explorer</h2>
-          <p class="text-slate-500 mt-1">Manage your raw data records.</p>
-        </div>
+    <section id="page-data" class="hidden animate-fade-in">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Database Tools</h2>
         
-        <!-- Controls -->
-        <div class="flex flex-wrap gap-3">
-          <select id="csvSelect" class="bg-white border-slate-200 rounded-lg text-sm py-2 pr-8 shadow-sm">
-            <option value="buyers.csv">Buyers Database</option>
-            <option value="listings.csv">Listings Database</option>
-            <option value="matches.csv">Matches (Temp)</option>
-          </select>
-          <button id="refreshCsv" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-all">
-            <i class="ph ph-arrow-clockwise mr-1"></i> Refresh
-          </button>
-          <button id="deleteSelected" class="bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-medium transition-all">
-            <i class="ph ph-trash mr-1"></i> Delete
-          </button>
-          <button id="downloadCsv" class="hidden">Download</button> <!-- Kept for logic but hidden UI -->
-        </div>
-      </div>
-
-      <!-- Filters -->
-      <div class="bg-white rounded-xl border border-slate-200 p-4 mb-6 shadow-sm">
-        <div class="flex flex-wrap gap-4 items-center justify-between">
-          <div class="flex-1 min-w-[200px]">
-            <div class="relative">
-              <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-              <input id="csvFilterQuick" placeholder="Search anything..." class="w-full pl-10 rounded-lg border-slate-200 text-sm py-2" />
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-3">Buyers</h3>
+                <div class="flex gap-2"><button onclick="downloadTableAsCSV('buyers')" class="flex-1 bg-slate-50 border hover:bg-slate-100 py-2 rounded text-xs font-bold text-slate-600">Download</button><button onclick="clearDatabaseTable('buyers')" class="flex-1 bg-red-50 border border-red-100 hover:bg-red-100 py-2 rounded text-xs font-bold text-red-600">Clear</button></div>
             </div>
-          </div>
-          
-          <div class="flex items-center gap-2">
-            <button id="addDataFilterBtn" class="text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-md text-sm font-medium transition-colors">+ Add Filter</button>
-            <div class="h-4 w-px bg-slate-200"></div>
-            <select id="dataFilterMode" class="text-sm border-none bg-transparent text-slate-500 font-medium focus:ring-0"><option value="and">AND</option><option value="or">OR</option></select>
-            <button id="applyDataFilters" class="text-slate-600 hover:text-indigo-600 text-sm font-medium px-2">Apply</button>
-            <button id="clearDataFilters" class="text-slate-400 hover:text-slate-600 text-sm px-2">Clear</button>
-          </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-3">Listings</h3>
+                <div class="flex gap-2"><button onclick="downloadTableAsCSV('listings')" class="flex-1 bg-slate-50 border hover:bg-slate-100 py-2 rounded text-xs font-bold text-slate-600">Download</button><button onclick="clearDatabaseTable('listings')" class="flex-1 bg-red-50 border border-red-100 hover:bg-red-100 py-2 rounded text-xs font-bold text-red-600">Clear</button></div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-3">Matches</h3>
+                <div class="flex gap-2"><button onclick="downloadTableAsCSV('matches')" class="flex-1 bg-slate-50 border hover:bg-slate-100 py-2 rounded text-xs font-bold text-slate-600">Download</button><button onclick="clearDatabaseTable('matches')" class="flex-1 bg-red-50 border border-red-100 hover:bg-red-100 py-2 rounded text-xs font-bold text-red-600">Clear</button></div>
+            </div>
         </div>
-        <div id="dataFiltersContainer" class="mt-3 space-y-2"></div>
-      </div>
 
-      <!-- Table -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table>
-            <thead id="csvHead"></thead>
-            <tbody id="csvBody"></tbody>
-          </table>
+        <div class="bg-white p-4 mb-4 border border-slate-200 rounded-xl shadow-sm">
+           <div class="flex justify-between items-center mb-3">
+              <h3 class="font-bold text-sm text-slate-700 flex items-center gap-2"><i class="ph ph-funnel"></i> Advanced Filters</h3>
+              <div class="flex gap-2 items-center">
+                 <button id="addDataFilterBtn" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md">+ Add Rule</button>
+                 <div class="w-px h-4 bg-slate-200 mx-1"></div>
+                 <span class="text-xs text-slate-500 font-medium">Match:</span>
+                 <select id="dataFilterMode" class="text-xs border-slate-200 rounded bg-slate-50 py-1"><option value="and">ALL (AND)</option><option value="or">ANY (OR)</option></select>
+                 <button id="applyDataFilters" class="text-xs font-bold text-white bg-slate-700 hover:bg-slate-800 px-3 py-1.5 rounded-md">Apply</button>
+                 <button id="clearDataFilters" class="text-xs font-bold text-slate-500 hover:text-slate-700 px-2">Reset</button>
+              </div>
+           </div>
+           <div id="dataFiltersContainer" class="space-y-2"></div>
         </div>
-      </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex gap-3 bg-slate-50">
+                <select id="csvSelect" class="border-slate-200 border rounded-lg text-sm shadow-sm p-2"><option value="buyers.csv">View Buyers</option><option value="listings.csv">View Listings</option><option value="matches.csv">View Matches</option></select>
+                <button id="refreshCsv" class="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Refresh Table</button>
+                <div class="flex-1"></div>
+                <input id="csvFilterQuick" placeholder="Quick Search..." class="border border-slate-200 rounded-lg text-sm px-3 py-2 w-64" />
+            </div>
+            <div class="overflow-x-auto"><table class="w-full"><thead id="csvHead"></thead><tbody id="csvBody"></tbody></table></div>
+        </div>
     </section>
 
-    <!-- 4. MATCHES PAGE -->
-    <section id="page-matches" class="hidden">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900">Match Results</h2>
-          <p class="text-slate-500 mt-1">AI-scored matches between Buyers and Listings.</p>
+    <section id="page-matches" class="hidden animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+            <div><h2 class="text-2xl font-bold text-slate-900">Run Matcher</h2><p class="text-slate-500">Compare Database Buyers vs Listings.</p></div>
+            <div class="flex gap-2 bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                <input id="minScore" placeholder="Min Score (60)" class="w-24 border-none text-sm bg-transparent" />
+                <button id="mergeAndRun" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-bold shadow hover:bg-indigo-700">Run Matcher</button>
+                <button id="saveMatchesBtn" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-bold shadow hover:bg-green-700 hidden">Save Results</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 h-fit shadow-sm">
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-sm text-slate-800">Filter Results</h3>
+                        <button id="clearMatchFilters" class="text-xs text-slate-400 hover:text-slate-600">Reset</button>
+                    </div>
+                    <div id="matchFiltersContainer" class="space-y-2 mb-3"></div>
+                    <button id="addMatchFilterBtn" class="w-full py-1.5 border border-dashed border-slate-300 rounded text-xs text-slate-500 hover:bg-slate-50 mb-3">+ Add Filter Rule</button>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+                        <select id="matchFilterMode" class="text-xs border-slate-200 rounded"><option value="and">Match ALL</option><option value="or">Match ANY</option></select>
+                        <button id="applyMatchFilters" class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded">Apply Filters</button>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-slate-100">
+                    <h3 class="font-bold text-xs text-slate-400 uppercase mb-3">Extra Data (Optional)</h3>
+                    <div class="space-y-3">
+                        <input type="file" id="uploadBuyers" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-indigo-50 file:text-indigo-700"/>
+                        <input type="file" id="uploadListings" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-indigo-50 file:text-indigo-700"/>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-3"><div id="matchesContainer"></div></div>
         </div>
         
-        <div class="flex gap-3 items-center bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
-          <input id="minScore" placeholder="Min Score (60)" class="w-24 border-none bg-transparent text-sm focus:ring-0" />
-          <button id="mergeAndRun" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition-all">
-            Run Matcher
-          </button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <!-- Sidebar Uploads -->
-        <div class="lg:col-span-1">
-          <div class="bg-slate-50 rounded-xl p-5 border border-slate-100">
-            <h3 class="font-semibold text-slate-800 mb-3 text-sm">Temporary Uploads</h3>
-            <p class="text-xs text-slate-500 mb-4">Upload CSVs to match against without saving to database.</p>
-            
-            <div class="space-y-3">
-              <div>
-                <label class="block text-xs font-medium text-slate-500 mb-1">Extra Buyers</label>
-                <input type="file" id="uploadBuyers" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-500 mb-1">Extra Listings</label>
-                <input type="file" id="uploadListings" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
-              </div>
-            </div>
-            
-            <!-- Hidden elements required by JS logic -->
-            <div class="hidden">
-               <button id="downloadMatchesBtn"></button>
-               <button id="addMatchFilterBtn"></button>
-               <select id="matchFilterMode"><option>AND</option></select>
-               <input id="matchScoreMin"><input id="matchScoreMax">
-               <button id="applyMatchFilters"></button><button id="clearMatchFilters"></button>
-               <div id="matchFiltersContainer"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Results Area -->
-        <div class="lg:col-span-2">
-          <div id="matchesContainer" class="space-y-4">
-            <div class="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-              <p class="text-slate-400">Run the matcher to see results here.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <div class="hidden"><input id="matchScoreMin"><input id="matchScoreMax"></div>
     </section>
 
   </main>
 
   <script>
-  // ---- UTILITIES ----
-  const $ = id => document.getElementById(id);
-  function parseCSV(text){ return Papa.parse(text, { header:true, skipEmptyLines:true }).data; }
-  function toCSV(arr){ return Papa.unparse(arr); }
-  function downloadText(filename, text){
-    const blob = new Blob([text], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-    URL.revokeObjectURL(url);
-  }
-  function uid(prefix='id'){ return prefix + '-' + Math.random().toString(36).slice(2,10); }
-  function unitToMultiplier(unit){
-    unit = (unit||'').toLowerCase();
-    if(unit.includes('lakh')) return 100000;
-    if(unit.includes('thousand')) return 1000;
-    if(unit.includes('crore')) return 10000000;
-    return 1;
-  }
-  function parseNumber(v){ if(v==null||v==='') return null; const n = parseFloat(String(v).replace(/[^0-9.]/g,'')); return isNaN(n)?null:n; }
-  function toRupees(value, unit){ const n = parseNumber(value); if(n===null) return null; return n * unitToMultiplier(unit); }
-  
-  // SECURITY FIX: Prevent XSS
-  function escapeHtml(text) {
-    if (text == null) return '';
-    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  }
+    // --- GLOBAL STATE ---
+    let baseBuyers = [], baseListings = [], dbMatches = [];
+    let csvRaw = [], csvColumns = [], selectedSet = new Set();
+    let dataFilters = [], matchFilters = []; 
+    const $ = id => document.getElementById(id);
 
-  // ---- STATE ----
-  let baseBuyers = [], baseListings = [];
-  let uploadedBuyers = [], uploadedListings = [];
-  let mergedBuyers = [], mergedListings = [];
-  let matches = [];
-  let csvRaw = [], csvColumns = [], selectedSet = new Set();
-  let dataFilters = [], matchFilters = [];
+    // --- UTILS ---
+    function uid(prefix='id'){ return prefix + '-' + Math.random().toString(36).slice(2,10); }
+    function parseNumber(v){ if(v==null||v==='') return null; const n = parseFloat(String(v).replace(/[^0-9.]/g,'')); return isNaN(n)?null:n; }
+    function toRupees(value, unit){ const n = parseNumber(value); if(n===null) return null; const mul = (unit||'').toLowerCase().includes('crore') ? 10000000 : ((unit||'').toLowerCase().includes('lakh') ? 100000 : 1000); return n * mul; }
+    function escapeHtml(text) { return String(text||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function toCSV(arr){ return Papa.unparse(arr); }
+    function downloadText(filename, text){ const blob = new Blob([text], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); }
 
-  // ---- HELPERS ----
-  function ensureUniqueId(prefix, suppliedId, existingArrays) {
-    // Simple ID generation for new entries
-    return prefix + '-' + Math.random().toString(36).slice(2,10);
-  }
+    // --- FILTER LOGIC ---
+    const OPERATORS = [{v:'contains',l:'Contains'},{v:'equals',l:'Equals'},{v:'starts',l:'Starts with'},{v:'gt',l:'>'},{v:'lt',l:'<'}];
 
-  function mergeBuyers(base, uploaded){
-    const out = [...(base || [])];
-    const ids = new Set((base||[]).map(b => (b.id||'').toString()));
-    for(const u of (uploaded||[])){
-      if(!u) continue;
-      const uid = (u.id||'').toString();
-      if(uid && !ids.has(uid)){ out.push(u); ids.add(uid); }
-      else if(!uid){
-        const key = ((u.name||'')+'|'+(u.city||'')+'|'+(u.mobile||'')).toLowerCase();
-        const exists = out.some(b=>(((b.name||'')+'|'+(b.city||'')+'|'+(b.mobile||'')).toLowerCase()===key));
-        if(!exists) out.push(u);
-      }
+    function createFilterRow(container, columns, filtersArray) {
+        const row = document.createElement('div'); 
+        row.className = 'flex gap-2 items-center animate-fade-in';
+        const colSel = document.createElement('select');
+        colSel.className = 'border border-slate-300 rounded text-xs p-1.5 max-w-[120px] focus:border-indigo-500 focus:ring-indigo-500';
+        columns.forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; colSel.appendChild(opt); });
+        const opSel = document.createElement('select');
+        opSel.className = 'border border-slate-300 rounded text-xs p-1.5 bg-slate-50';
+        OPERATORS.forEach(o => { const opt = document.createElement('option'); opt.value = o.v; opt.textContent = o.l; opSel.appendChild(opt); });
+        const valInp = document.createElement('input');
+        valInp.className = 'border border-slate-300 rounded text-xs p-1.5 flex-1 min-w-[80px]';
+        valInp.placeholder = 'Value...';
+        const rem = document.createElement('button');
+        rem.innerHTML = '<i class="ph ph-x"></i>';
+        rem.className = 'text-red-400 hover:text-red-600 p-1';
+        row.appendChild(colSel); row.appendChild(opSel); row.appendChild(valInp); row.appendChild(rem); container.appendChild(row);
+        const rule = { column: colSel.value, op: opSel.value, value: '' };
+        filtersArray.push(rule);
+        colSel.onchange = () => rule.column = colSel.value;
+        opSel.onchange = () => rule.op = opSel.value;
+        valInp.oninput = () => rule.value = valInp.value;
+        rem.onclick = () => { filtersArray.splice(filtersArray.indexOf(rule), 1); container.removeChild(row); };
     }
-    return out;
-  }
-  function mergeListings(base, uploaded){
-    const out = [...(base || [])];
-    const urls = new Set((base||[]).map(l => (l.url||'').toString()));
-    for(const u of (uploaded||[])){
-      if(!u) continue;
-      const uurl = (u.url||'').toString();
-      if(uurl && !urls.has(uurl)){ out.push(u); urls.add(uurl); }
-      else if(!uurl){
-        const key = ((u.address||'')+'|'+(u.locality||'')+'|'+(u.price||'')).toLowerCase();
-        const exists = out.some(l=>(((l.address||'')+'|'+(l.locality||'')+'|'+(l.price||'')).toLowerCase()===key));
-        if(!exists) out.push(u);
-      }
-    }
-    return out;
-  }
 
-  // ---- MATCHER LOGIC (Missing Part) ----
-  // ---- ADVANCED MATCHER LOGIC (Weighted & Realistic) ----
-function runMatcher(buyersArr, listingsArr, minScore=60){
-  const out = [];
-
-  // Helper: Normalize strings (remove spaces/symbols, lowercase)
-  // e.g., "3 BHK Apartment" -> "3bhkapartment"
-  const clean = (str) => (str || '').toLowerCase().replace(/[\s\W_]+/g, '');
-  
-  // Helper: Tokenize (split into words for fuzzy search)
-  // e.g. "Andheri West, Mumbai" -> ["andheri", "west", "mumbai"]
-  const tokens = (str) => (str || '').toLowerCase().split(/[\s,]+/).filter(s => s.length > 2);
-
-  // Pre-process Listings to avoid re-calculating inside the loop
-  const listingsPrepared = (listingsArr||[]).map(l => ({
-    raw: l,
-    // Data normalization
-    dealType: clean(l.deal_type), // sell/rent
-    type: clean(l.property_type), // 2bhk
-    price: parseNumber(l.price) || parseNumber(l.price_raw) || 0,
-    // Location tokens (City + Locality + Address)
-    locTokens: tokens((l.locality||'') + ' ' + (l.city||'') + ' ' + (l.state||'') + ' ' + (l.address||'')),
-    // Description text for keyword search
-    descText: ((l.description||'') + ' ' + (l.project||'') + ' ' + (l.address||'')).toLowerCase()
-  }));
-
-  for(const b of (buyersArr||[])){
-    const bId = b.id || uid('buyer');
-    
-    // Buyer Requirements
-    const bService = clean(b.service_type); // buy/rent
-    const bType = clean(b.property_type);   // 2bhk
-    const bBudget = b.budget_rupees || parseNumber(b.budget_raw) || 0;
-    
-    // Buyer Location Preference (split into checking words)
-    const bLocTokens = tokens((b.city||'') + ' ' + (b.state||'') + ' ' + (b.preferred_localities||''));
-    
-    // Buyer Keywords (Projects, Specifics)
-    const bKeywords = tokens((b.preferred_projects||'') + ' ' + (b.specific||''));
-
-    for(const l of listingsPrepared){
-      let totalScore = 0;
-      
-      // --- 1. THE KILL SWITCH (Deal Breakers) ---
-      // If Buyer wants to Rent but Listing is Sell -> SKIP immediately
-      // Map: 'buy' matches 'sell', 'rent' matches 'rent'
-      const isRentalMismatch = (bService.includes('rent') && !l.dealType.includes('rent'));
-      const isSaleMismatch = (bService.includes('buy') && !l.dealType.includes('sell'));
-      
-      if(isRentalMismatch || isSaleMismatch) continue; 
-
-      // --- 2. BUDGET SCORING (Max 30 Points) ---
-      // Real estate rule: Buyers rarely go above budget, but might go 10-20% higher for a perfect house.
-      // Sellers barely go below, but listings are negotiable.
-      if(bBudget > 0 && l.price > 0) {
-        // Calculate percentage difference
-        const diff = Math.abs(bBudget - l.price);
-        const percentDiff = diff / bBudget; // e.g., 0.10 (10%)
-        
-        if(l.price <= bBudget) {
-            // Under budget is great. Full points.
-            totalScore += 30; 
-        } else if(percentDiff <= 0.25) {
-            // Within 25% over budget (Negotiable range). 
-            // Linear drop: 25% over = 0 points. 0% over = 30 points.
-            // Formula: 30 * (1 - (diff / (bBudget * 0.25)))
-            const score = 30 * (1 - (diff / (bBudget * 0.25)));
-            totalScore += Math.max(0, score);
-        }
-        // If > 25% over budget, 0 points for budget.
-      } else {
-        // If no budget specified, give a neutral score
-        totalScore += 15; 
-      }
-
-      // --- 3. LOCATION SCORING (Max 30 Points) ---
-      // We check how many of the Buyer's location words appear in the Listing
-      if(bLocTokens.length > 0) {
-         const matches = bLocTokens.filter(token => l.locTokens.some(lt => lt.includes(token)));
-         if(matches.length > 0) {
-            // Full points if we matched city/locality
-            totalScore += 30;
-         }
-      } else {
-         totalScore += 10; // No preference specified
-      }
-
-      // --- 4. CONFIGURATION / TYPE SCORING (Max 25 Points) ---
-      // "3 BHK" matching "3 BHK"
-      if(bType && l.type) {
-        if(l.type.includes(bType) || bType.includes(l.type)) {
-            totalScore += 25;
-        } else {
-            // Partial match logic? (e.g. 3BHK buyer might look at 4BHK)
-            // For now, strict mismatch gets 0.
-        }
-      } else {
-        totalScore += 10; // No type specified
-      }
-
-      // --- 5. KEYWORD / DESCRIPTION BONUS (Max 15 Points) ---
-      // Checks for specific projects, "Sea View", "Furnished", etc.
-      let keywordHits = 0;
-      bKeywords.forEach(kw => {
-        if(l.descText.includes(kw) || l.locTokens.includes(kw)) keywordHits++;
-      });
-      // Cap bonus at 15 points (5 points per keyword match)
-      totalScore += Math.min(15, keywordHits * 5);
-
-
-      // --- FINAL SAVE ---
-      // Round score
-      const finalScore = Math.round(totalScore);
-
-      if(finalScore >= minScore){
-        out.push({
-          buyer_id: bId, 
-          buyer_name: b.name||'', 
-          listing_id: l.raw.id||'', 
-          listing_title: l.raw.project || l.raw.address || l.raw.description || 'Property', 
-          listing_price: l.price, 
-          listing_location: l.raw.locality || l.raw.state || '', 
-          listing_url: l.raw.url || '', 
-          score: finalScore
+    function applyFilters(arr, filtersArray, mode='and'){
+        if(!filtersArray.length) return arr;
+        return arr.filter(item => {
+            const results = filtersArray.map(r => {
+                const val = String(item[r.column]||'').toLowerCase();
+                const q = String(r.value).toLowerCase();
+                if(r.op==='contains') return val.includes(q);
+                if(r.op==='equals') return val===q;
+                if(r.op==='starts') return val.startsWith(q);
+                const numVal = parseFloat(val) || 0; const numQ = parseFloat(q) || 0;
+                if(r.op==='gt') return numVal > numQ;
+                if(r.op==='lt') return numVal < numQ;
+                return false;
+            });
+            return mode==='and' ? results.every(Boolean) : results.some(Boolean);
         });
-      }
-    }
-  }
-
-  // Sort by Buyer ID, then by Score (Highest first)
-  out.sort((a,b) => {
-      if (a.buyer_id < b.buyer_id) return -1;
-      if (a.buyer_id > b.buyer_id) return 1;
-      return b.score - a.score;
-  });
-  
-  return out;
-}
-
-  function renderMatches(ms){
-    const cont = $('matchesContainer'); if(!cont) return;
-    cont.innerHTML='';
-    if(!ms || !ms.length){ 
-        cont.innerHTML = '<div class="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300"><p class="text-slate-400">No matches found.</p></div>'; 
-        return; 
     }
 
-    const grouped = {};
-    ms.forEach(m => { grouped[m.buyer_id] = grouped[m.buyer_id] || { buyer_name: m.buyer_name, rows: [] }; grouped[m.buyer_id].rows.push(m); });
-
-    for(const bid of Object.keys(grouped)){
-      const g = grouped[bid];
-      const card = document.createElement('div');
-      card.className = 'bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-4';
-      
-      card.innerHTML = `
-        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-            <div>
-                <h3 class="font-bold text-lg text-slate-800">${escapeHtml(g.buyer_name||'(Unnamed)')}</h3>
-                <span class="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">ID: ${bid}</span>
-            </div>
-            <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">${g.rows.length} Matches</div>
-        </div>
-      `;
-      
-      const grid = document.createElement('div');
-      grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
-      
-      g.rows.forEach(r => {
-        const item = document.createElement('div');
-        item.className = 'border border-slate-200 rounded-lg p-3 hover:border-indigo-300 hover:shadow-md transition-all bg-slate-50/50';
-        item.innerHTML = `
-            <div class="flex justify-between items-start mb-2">
-                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded">${r.score}% Match</span>
-                <span class="font-bold text-slate-900">₹${r.listing_price || '?'}</span>
-            </div>
-            <div class="mb-2">
-                <a href="${r.listing_url||'#'}" target="_blank" class="text-sm font-semibold text-indigo-600 hover:underline line-clamp-1">${escapeHtml(r.listing_title || 'Untitled')}</a>
-                <p class="text-xs text-slate-500 mt-1 line-clamp-1">${escapeHtml(r.listing_location)}</p>
-            </div>
-        `;
-        grid.appendChild(item);
-      });
-      card.appendChild(grid); cont.appendChild(card);
+    // --- DB ACTIONS ---
+    async function clearDatabaseTable(tableName) {
+        if(!confirm(`⚠️ DANGER: Clear ALL data in '${tableName}'?`)) return;
+        if(prompt(`Type "DELETE" to confirm clearing ${tableName}.`) !== "DELETE") return alert("Cancelled.");
+        try { await fetch(`/api/${tableName}_clear/all`, { method: 'DELETE' }); alert(`Table '${tableName}' cleared.`); await loadDefaults(); } 
+        catch(e) { alert("Network error."); }
     }
-  }
-
-  // ---- FETCH FROM SERVER ----
-  async function loadDefaults(){
-    baseBuyers = []; baseListings = [];
-    try {
-      const r1 = await fetch('/api/buyers');
-      if (r1.ok) baseBuyers = await r1.json();
-    } catch(e){ console.warn('Fetch buyers failed', e); }
-
-    try {
-      const r2 = await fetch('/api/listings');
-      if (r2.ok) {
-        const raw = await r2.json();
-        baseListings = raw.map(l => ({ ...l, price: parseNumber(l.price) || parseNumber(l.price_raw) || l.price }));
-      }
-    } catch(e){ console.warn('Fetch listings failed', e); }
-
-    mergedBuyers = mergeBuyers(baseBuyers, uploadedBuyers);
-    mergedListings = mergeListings(baseListings, uploadedListings);
-    console.info('Loaded DB Data. Buyers:', mergedBuyers.length, 'Listings:', mergedListings.length);
-  }
-
-  async function loadCsvFile(name){
-    csvRaw = []; csvColumns = [];
-    const apiEndpoint = { 'buyers.csv': '/api/buyers', 'listings.csv': '/api/listings' }[name];
-
-    if (name === 'matches.csv') {
-      const source = matches || [];
-      if(!source.length) alert("No matches generated yet. Run the Matcher first.");
-      csvRaw = source.map((r,i) => ({ __index:i, ...r }));
-    } 
-    else if (apiEndpoint) {
-      try {
-        const res = await fetch(apiEndpoint);
-        if(!res.ok) throw new Error(`Server ${res.status}`);
-        const data = await res.json();
-
-        if(name === 'buyers.csv') {
-          baseBuyers = data;
-          mergedBuyers = mergeBuyers(baseBuyers, uploadedBuyers);
-          csvRaw = mergedBuyers.map((r,i) => ({ __index:i, ...r }));
-        } 
-        else if(name === 'listings.csv') {
-          baseListings = data.map(l => ({ ...l, price: parseNumber(l.price)||l.price }));
-          mergedListings = mergeListings(baseListings, uploadedListings);
-          csvRaw = mergedListings.map((r,i) => ({ __index:i, ...r }));
-        }
-      } catch(err) {
-        console.error(err);
-        alert(`Error loading DB: ${err.message}`);
-      }
+    function downloadTableAsCSV(type) {
+        let data = (type==='buyers') ? baseBuyers : ((type==='listings') ? baseListings : dbMatches);
+        if(!data || !data.length) return alert(`No data in ${type}.`);
+        downloadText(`${type}_db_export.csv`, toCSV(data));
     }
-
-    csvColumns = csvRaw.length ? Object.keys(csvRaw[0]).filter(k => k !== '__index') : [];
-    renderCsvTable();
-  }
-
-  // ---- RENDER TABLE (Clean - No Listeners inside) ----
-  function renderCsvTable(){
-    const head = $('csvHead'), body = $('csvBody');
-    if(!head || !body) return;
-    head.innerHTML=''; body.innerHTML='';
-    if(!csvColumns.length){ head.innerHTML = '<tr><th>No data</th></tr>'; return; }
-    
-    // Header
-    const trh = document.createElement('tr');
-    trh.innerHTML = `<th><input id="selectAll" type="checkbox" /></th>` + csvColumns.map(c=>`<th>${c}</th>`).join('') + '<th>Actions</th>';
-    head.appendChild(trh);
-    
-    // Select All Listener
-    const selectAllEl = $('selectAll');
-    if(selectAllEl) selectAllEl.addEventListener('change', e=> { 
-        if(e.target.checked) csvRaw.forEach(r=>selectedSet.add(r.__index)); 
-        else selectedSet.clear(); 
-        renderCsvTable(); 
-    });
-
-    // Body
-    const filterQuick = ($('csvFilterQuick') ? $('csvFilterQuick').value : '').toLowerCase();
-    csvRaw.forEach(row => {
-      const rowValues = csvColumns.map(c=> (row[c]||'').toString()).join(' ').toLowerCase();
-      if(filterQuick && !rowValues.includes(filterQuick)) return;
-      
-      const tr = document.createElement('tr');
-      const checked = selectedSet.has(row.__index) ? 'checked' : '';
-      
-      // FIX: Use escapeHtml here
-      tr.innerHTML = `<td><input type="checkbox" class="row-checkbox" data-idx="${row.__index}" ${checked}></td>` +
-        csvColumns.map(c=>`<td>${escapeHtml(row[c])}</td>`).join('') +
-        `<td><button data-idx="${row.__index}" class="edit">Edit</button></td>`;
-      body.appendChild(tr);
-    });
-  }
-
-  // ---- CRUD ACTIONS ----
-  async function deleteSelectedRows(){
-    if(!selectedSet.size){ alert('No selection'); return; }
-    if(!confirm(`Permanently delete ${selectedSet.size} rows from Database?`)) return;
-
-    const currentCsv = $('csvSelect').value;
-    const isBuyer = currentCsv === 'buyers.csv';
-    const apiBase = isBuyer ? '/api/buyers' : '/api/listings';
-
-    // Disable button if desired, but blocking alert usually enough
-    for(const idx of selectedSet){
-      const row = csvRaw.find(r => r.__index === idx);
-      if(row && row.id){
+    async function saveMatchesToDb(matchesArr) {
+        if(!matchesArr.length) return;
+        $('saveMatchesBtn').textContent = "Saving..."; $('saveMatchesBtn').disabled = true;
+        const records = matchesArr.map(m => ({ ...m, id: m.id || uid('match') }));
+        await fetch('/api/matches/bulk', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(records) });
+        alert("Matches Saved!"); $('saveMatchesBtn').textContent = "Save Results"; $('saveMatchesBtn').disabled = false;
+    }
+    async function loadDefaults() {
         try {
-          await fetch(`${apiBase}/${row.id}`, { method: 'DELETE' });
-        } catch(e){ console.error('Delete failed', row.id); }
-      }
+            const [r1, r2, r3] = await Promise.all([fetch('/api/buyers'), fetch('/api/listings'), fetch('/api/matches')]);
+            if(r1.ok) baseBuyers = await r1.json(); if(r2.ok) baseListings = await r2.json(); if(r3.ok) dbMatches = await r3.json();
+        } catch(e) { console.error("Load error", e); }
     }
-    
-    alert('Deletion complete.');
-    selectedSet.clear();
-    await loadCsvFile(currentCsv);
-  }
 
-  async function handleEditClick(btn){
-    const idx = parseInt(btn.getAttribute('data-idx'));
-    const row = csvRaw.find(r => r.__index === idx);
-    if (!row) return;
+    // --- NEW: ROW EDIT FUNCTION ---
+    async function handleEditRow(btn) {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        const currentCsv = $('csvSelect').value;
+         $('refreshCsv').click();
+        
+        // Identify which array we are editing
+        let sourceArray = [];
+        if (currentCsv === 'buyers.csv') sourceArray = baseBuyers;
+        else if (currentCsv === 'listings.csv') sourceArray = baseListings;
+        else return alert("Cannot edit matches directly. Clear and re-run.");
 
-    const currentCsv = $('csvSelect').value;
-    const isDbData = (currentCsv === 'buyers.csv' || currentCsv === 'listings.csv');
-    const editedRow = { ...row };
-    
-    let hasChanges = false;
-    for (const col of csvColumns) {
-        if (col === '__index') continue; 
-        const oldVal = row[col] || '';
-        const newVal = prompt(`Edit ${col}`, oldVal);
-        if (newVal !== null && newVal !== oldVal) {
-            editedRow[col] = newVal;
-            hasChanges = true;
+        // Find Row
+        const row = sourceArray[idx]; 
+        // NOTE: When using filtered view, index might mismatch if not careful. 
+        // Better to find by ID if available, but filtered view uses csvRaw.
+        // Let's use csvRaw for safety as it reflects current view.
+        const viewRow = csvRaw[idx]; // This is safe with current renderer logic
+        
+        if (!viewRow || !viewRow.id) return alert("Row not found or ID missing.");
+
+        const editedRow = { ...viewRow };
+        delete editedRow.__index; // Remove internal index before edit loop
+
+        let hasChanges = false;
+        // Simple Prompt Loop for editing
+        for (const key of Object.keys(editedRow)) {
+            if (key === 'id') continue; // Don't edit ID
+            const oldVal = editedRow[key] || '';
+            const newVal = prompt(`Edit ${key}:`, oldVal);
+            if (newVal !== null && newVal !== oldVal) {
+                editedRow[key] = newVal;
+                hasChanges = true;
+            }
         }
-    }
 
-    if (!hasChanges) return;
+        if (!hasChanges) return; // Cancelled
 
-    if (isDbData && row.id) {
+        // Save to DB
         try {
             const apiEndpoint = currentCsv === 'buyers.csv' ? '/api/buyers' : '/api/listings';
-            delete editedRow.__index;
-            const res = await fetch(`${apiEndpoint}/${row.id}`, {
+            const res = await fetch(`${apiEndpoint}/${viewRow.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editedRow)
             });
+
             if (res.ok) {
-                alert('Saved successfully!');
-                await loadCsvFile(currentCsv);
-            } else alert('Server failed to save edit.');
-        } catch (e) { console.error(e); alert('Error connecting to server.'); }
-    } else {
-        Object.assign(row, editedRow);
-        renderCsvTable();
-    }
-  }
-
-  // ---- MAIN WIRING ----
-  window.addEventListener('DOMContentLoaded', async () => {
-    await loadDefaults();
-
-    // 1. ROBUST EVENT LISTENER (Fixes checkbox/edit bugs)
-    const csvBody = $('csvBody');
-    if(csvBody) {
-      csvBody.addEventListener('click', (e) => {
-        // Handle Edit Button Click (Bubbling)
-        const btn = e.target.closest('button.edit'); 
-        if(btn) {
-           handleEditClick(btn);
-           return;
+                alert("Row updated successfully!");
+                await loadDefaults(); // Reload DB
+                $('refreshCsv').click(); // Refresh Table View
+            } else {
+                alert("Server failed to save.");
+            }
+        } catch (e) {
+            console.error(e); alert("Network Error saving edit.");
         }
-      });
-      csvBody.addEventListener('change', (e) => {
-        // Handle Checkbox Change
-        if(e.target.classList.contains('row-checkbox')) {
-          const idx = parseInt(e.target.getAttribute('data-idx'));
-          if(e.target.checked) selectedSet.add(idx);
-          else selectedSet.delete(idx);
-        }
-      });
     }
 
-    // 2. Navigation
-    document.querySelectorAll('nav button').forEach(btn => btn.onclick = ()=> {
-      ['buyers','listings','data','matches'].forEach(p=> {
-        const el = document.getElementById('page-' + p);
-        if(el) el.style.display = (p === btn.getAttribute('data-route')) ? 'block':'none';
-      });
-      document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b === btn));
-    });
+    // --- MATCHER ---
+    function runMatcher(buyersArr, listingsArr, minScore=60){
+        const out = [];
+        const clean = (str) => (str || '').toLowerCase().replace(/[\s\W_]+/g, '');
+        const tokens = (str) => (str || '').toLowerCase().split(/[\s,]+/).filter(s => s.length > 2);
+        const listingsPrepared = (listingsArr||[]).map(l => ({
+            raw: l, dealType: clean(l.deal_type), type: clean(l.property_type),
+            price: parseNumber(l.price) || parseNumber(l.price_raw) || 0,
+            locTokens: tokens((l.locality||'')+' '+(l.city||'')+' '+(l.state||'')+' '+(l.address||'')),
+            descText: ((l.description||'')+' '+(l.project||'')+' '+(l.address||'')).toLowerCase()
+        }));
+        for(const b of (buyersArr||[])){
+            const bId = b.id || uid('buyer');
+            const bBudget = b.budget_rupees || toRupees(b.budget_raw, b.budget_unit) || 0;
+            const bLocTokens = tokens((b.city||'')+' '+(b.state||'')+' '+(b.preferred_localities||''));
+            const bKeywords = tokens((b.preferred_projects||'')+' '+(b.specific||''));
+            const bType = clean(b.property_type); const bService = clean(b.service_type);
+            for(const l of listingsPrepared){
+                let score = 0;
+                if((bService.includes('rent') && !l.dealType.includes('rent')) || (bService.includes('buy') && !l.dealType.includes('sell'))) continue;
+                if(bBudget > 0 && l.price > 0) {
+                    const diff = Math.abs(bBudget - l.price);
+                    if(l.price <= bBudget) score += 30; else if((diff/bBudget) <= 0.25) score += Math.max(0, 30 * (1 - (diff/(bBudget*0.25))));
+                } else score += 15;
+                if(bLocTokens.some(t => l.locTokens.some(lt => lt.includes(t)))) score += 30; else score += 10;
+                if(bType && l.type && (l.type.includes(bType) || bType.includes(l.type))) score += 25; else score += 10;
+                let kwHits = 0; bKeywords.forEach(kw => { if(l.descText.includes(kw)) kwHits++; }); score += Math.min(15, kwHits * 5);
+                const finalScore = Math.round(score);
+                if(finalScore >= minScore) out.push({ id: uid('match'), buyer_id: bId, buyer_name: b.name||'', listing_id: l.raw.id||'', listing_title: l.raw.address||'Property', listing_price: l.price, listing_location: l.raw.locality||'', listing_url: l.raw.url||'', score: finalScore });
+            }
+        }
+        return out.sort((a,b) => b.score - a.score);
+    }
 
-    // 3. Add Buyer (With Duplicate Prevention)
-    const addBuyerBtn = $('addBuyer');
-    if(addBuyerBtn) addBuyerBtn.onclick = async () => {
-      addBuyerBtn.disabled = true; 
-      addBuyerBtn.textContent = "Saving...";
-      
-      try {
-        const id = ensureUniqueId('buyer', '', [baseBuyers]);
-        const rec = {
-          id,
-          name: $('buyer_name').value.trim(),
-          mobile: $('buyer_mobile').value.trim(),
-          mobile2: $('buyer_mobile2').value.trim(),
-          email: $('buyer_email').value.trim(),
-          country: $('buyer_country').value.trim(),
-          state: $('buyer_state').value.trim(),
-          city: $('buyer_city').value.trim(),
-          service_type: $('buyer_service_type').value.trim(),
-          property_type: $('buyer_property_type').value.trim(),
-          sale_type: $('buyer_sale_type').value.trim(),
-          furnishing: $('buyer_furnishing').value.trim(),
-          possession_status: $('buyer_possession_status').value.trim(),
-          possession_time: $('buyer_possession_time').value.trim(),
-          budget_raw: $('buyer_budget').value.trim(),
-          budget_unit: ($('buyer_budget_unit')?$('buyer_budget_unit').value:'lakh'),
-          budget_rupees: toRupees($('buyer_budget').value.trim(), ($('buyer_budget_unit')?$('buyer_budget_unit').value:'lakh')),
-          area: $('buyer_area').value.trim(),
-          area_unit: ($('buyer_area_unit')?$('buyer_area_unit').value:'Sq Mt'),
-          preferred_localities: $('buyer_localities').value.trim(),
-          preferred_projects: $('buyer_projects').value.trim(),
-          lead_source: $('buyer_lead_source').value.trim(),
-          referral: $('buyer_referral').value.trim(),
-          nri: ($('buyer_nri')?$('buyer_nri').value:'no'),
-          loan_required: ($('buyer_loan_required')?$('buyer_loan_required').value:'no'),
-          purpose: ($('buyer_purpose')?$('buyer_purpose').value:''),
-          specific: $('buyer_specific').value.trim()
-        };
-        if(!rec.name || !rec.mobile){ alert('Name and Mobile required'); return; }
-
-        const res = await fetch('/api/buyers', {
-          method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(rec)
+    // --- RENDERERS ---
+    function renderMatches(ms){
+        const cont = $('matchesContainer'); cont.innerHTML='';
+        if(!ms.length) { cont.innerHTML = '<div class="p-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">No matches found. Try lowering score.</div>'; return; }
+        const grouped = {}; ms.forEach(m => { grouped[m.buyer_id] = grouped[m.buyer_id] || { buyer_name: m.buyer_name, rows: [] }; grouped[m.buyer_id].rows.push(m); });
+        Object.keys(grouped).forEach(bid => {
+            const g = grouped[bid];
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-6 animate-fade-in';
+            card.innerHTML = `<div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">${g.rows.length}</div><div><h3 class="font-bold text-lg text-slate-800">${escapeHtml(g.buyer_name||'(Unnamed)')}</h3><div class="text-xs text-slate-400 font-mono">ID: ${bid}</div></div></div></div>`;
+            const grid = document.createElement('div'); grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+            g.rows.forEach(r => {
+                const item = document.createElement('div'); item.className = 'border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-md transition-all bg-slate-50/50';
+                item.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full border border-green-200">${r.score}% Match</span><span class="font-bold text-slate-900">₹${r.listing_price||'?'}</span></div><div class="mb-2"><a href="${r.listing_url||'#'}" target="_blank" class="text-sm font-semibold text-indigo-600 hover:underline line-clamp-1">${escapeHtml(r.listing_title)}</a><p class="text-xs text-slate-500 mt-1 line-clamp-1">${escapeHtml(r.listing_location)}</p></div>`;
+                grid.appendChild(item);
+            });
+            card.appendChild(grid); cont.appendChild(card);
         });
-        if(res.ok){
-          alert(`Buyer saved (ID: ${id})`);
-          await loadDefaults();
-          ['buyer_name','buyer_mobile','buyer_mobile2','buyer_email','buyer_state','buyer_city','buyer_property_type','buyer_budget','buyer_area','buyer_localities','buyer_projects','buyer_lead_source','buyer_referral','buyer_specific'].forEach(id => { if($(id)) $(id).value = ''; });
-        } else alert('Save failed');
-      } catch(e) { console.error(e); alert('Server Error'); } 
-      finally { addBuyerBtn.disabled = false; addBuyerBtn.textContent = "Add Buyer"; }
-    };
+        $('saveMatchesBtn').classList.remove('hidden'); $('saveMatchesBtn').textContent = `Save ${ms.length} Matches to DB`; $('saveMatchesBtn').onclick = () => saveMatchesToDb(ms);
+    }
 
-    // 4. Add Listing
-    const addListingBtn = $('addListing');
-    if(addListingBtn) addListingBtn.onclick = async () => {
-      addListingBtn.disabled = true; addListingBtn.textContent = "Saving...";
-      try {
-        const id = ensureUniqueId('listing', '', [baseListings]);
-        const rec = {
-          id,
-          deal_type: ($('listing_deal_type')?$('listing_deal_type').value:'Sell'),
-          furnishing: ($('listing_furnishing')?$('listing_furnishing').value:''),
-          property_type: $('listing_property_type').value.trim(),
-          bedrooms: $('listing_bedrooms').value.trim(),
-          state: $('listing_state').value.trim(),
-          locality: $('listing_locality').value.trim(),
-          google_address: $('listing_google_address').value.trim(),
-          project: $('listing_project').value.trim(),
-          address: $('listing_address').value.trim(),
-          area: $('listing_area').value.trim(),
-          area_unit: ($('listing_area_unit')?$('listing_area_unit').value:'Sq Mt'),
-          price_raw: $('listing_price').value.trim(),
-          price_unit: ($('listing_price_unit')?$('listing_price_unit').value:'Lakh'),
-          price: toRupees($('listing_price').value.trim(), ($('listing_price_unit')?$('listing_price_unit').value:'Lakh')),
-          deposit_raw: $('listing_deposit').value.trim(),
-          deposit_unit: ($('listing_deposit_unit')?$('listing_deposit_unit').value:'Lakh'),
-          deposit: toRupees($('listing_deposit').value.trim(), ($('listing_deposit_unit')?$('listing_deposit_unit').value:'Lakh')),
-          contact: $('listing_contact').value.trim(),
-          url: $('listing_url').value.trim(),
-          description: $('listing_description').value.trim()
-        };
-        if(!rec.address){ alert('Address required'); return; }
+    function renderCsvTable(data, type) {
+        const head = $('csvHead'); const body = $('csvBody');
+        head.innerHTML = ''; body.innerHTML = '';
+        if(!data.length) { head.innerHTML='<tr><td class="p-4 text-slate-500">Empty Table</td></tr>'; return; }
+        
+        // Get Cols
+        const cols = Object.keys(data[0]).filter(k => k !== 'doc');
+        
+        // HEADER
+        head.innerHTML = `<tr>
+            ${cols.map(c => `<th class="bg-slate-50 text-slate-600 font-bold text-left p-3 border-b text-xs uppercase">${c}</th>`).join('')}
+            <th class="bg-slate-50 text-slate-600 font-bold text-left p-3 border-b text-xs uppercase">Action</th>
+        </tr>`;
+        
+        // BODY
+        const filterQuick = ($('csvFilterQuick') ? $('csvFilterQuick').value : '').toLowerCase();
+        data.forEach((row, idx) => {
+            const rowVals = cols.map(c => (row[c]||'').toString()).join(' ').toLowerCase();
+            if(filterQuick && !rowVals.includes(filterQuick)) return;
+            
+            // Store reference in raw for easy editing
+            csvRaw[idx] = row; 
 
-        const res = await fetch('/api/listings', {
-          method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(rec)
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                ${cols.map(c => `<td class="p-3 border-b text-sm text-slate-700">${escapeHtml(row[c])}</td>`).join('')}
+                <td class="p-3 border-b text-sm">
+                    <button class="edit-btn text-indigo-600 hover:text-indigo-900 font-bold text-xs" data-idx="${idx}">Edit</button>
+                </td>
+            `;
+            body.appendChild(tr);
         });
-        if(res.ok){
-          alert(`Listing saved (ID: ${id})`);
-          await loadDefaults();
-          ['listing_address','listing_description','listing_price','listing_area','listing_contact','listing_url','listing_bedrooms','listing_project','listing_google_address'].forEach(id => { if($(id)) $(id).value = ''; });
-        } else alert('Save failed');
-      } catch(e) { console.error(e); alert('Server Error'); }
-      finally { addListingBtn.disabled = false; addListingBtn.textContent = "Add Listing"; }
-    };
+    }
 
-    // 5. Data & Matcher Buttons
-    if($('refreshCsv')) $('refreshCsv').onclick = async ()=> loadCsvFile($('csvSelect').value);
-    if($('deleteSelected')) $('deleteSelected').onclick = ()=> deleteSelectedRows();
-    
-    // Download Buttons
-    if($('downloadCsv')) $('downloadCsv').onclick = ()=> {
-      if(!csvRaw.length) { alert('No data'); return; }
-      const out = csvRaw.map(r=> { const obj = {}; csvColumns.forEach(c => obj[c] = r[c] || ''); return obj; });
-      downloadText($('csvSelect').value || 'data.csv', toCSV(out));
-    };
-    if($('downloadBuyers')) $('downloadBuyers').onclick = ()=> downloadText('buyers_backup.csv', toCSV(mergeBuyers(baseBuyers, uploadedBuyers)));
-    if($('downloadListings')) $('downloadListings').onclick = ()=> downloadText('listings_backup.csv', toCSV(mergeListings(baseListings, uploadedListings)));
+    // --- MAIN WIRING ---
+    window.addEventListener('DOMContentLoaded', async () => {
+        await loadDefaults();
 
-    // Matcher
-    if($('mergeAndRun')) $('mergeAndRun').onclick = async () => {
-      await loadDefaults(); // ensure fresh DB data
-      mergedBuyers = mergeBuyers(baseBuyers, uploadedBuyers);
-      mergedListings = mergeListings(baseListings, uploadedListings);
-      const minScore = parseFloat($('minScore').value) || 60;
-      matches = runMatcher(mergedBuyers, mergedListings, minScore);
-      renderMatches(matches);
-      alert(`Matcher ran on ${mergedBuyers.length} buyers & ${mergedListings.length} listings. Results: ${matches.length}`);
-    };
-    if($('downloadMatchesBtn')) $('downloadMatchesBtn').onclick = ()=> downloadText('matches.csv', toCSV(matches || []));
+        // GLOBAL EVENT LISTENER (Event Delegation)
+        document.body.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                handleEditRow(e.target);
+            }
+        });
 
-    // Initialize
-    if($('csvSelect')) $('csvSelect').value = 'buyers.csv';
-    if($('refreshCsv')) $('refreshCsv').click();
-  });
+        document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
+             ['buyers','listings','data','matches'].forEach(p => {
+                 $( `page-${p}`).classList.add('hidden');
+                 if(btn.dataset.route === p) $(`page-${p}`).classList.remove('hidden');
+             });
+             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+             btn.classList.add('active');
+        });
 
-  // ---- FILTERS (Standard) ----
-  // (Assuming standard filter logic from previous versions, kept minimal for brevity, works with globals)
-  function createFilterRow(container, columns, filtersArray) {
-    const row = document.createElement('div'); row.className='filter-row';
-    const colSel = document.createElement('select');
-    columns.forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; colSel.appendChild(opt); });
-    const opSel = document.createElement('select');
-    ['contains','equals','starts','ends'].forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; opSel.appendChild(opt); });
-    const valInp = document.createElement('input'); valInp.placeholder = 'value';
-    const rem = document.createElement('button'); rem.textContent = 'Remove'; rem.className='danger'; rem.style.padding='6px';
-    row.appendChild(colSel); row.appendChild(opSel); row.appendChild(valInp); row.appendChild(rem); container.appendChild(row);
-    const rule = { column: colSel.value, op: opSel.value, value: '' };
-    filtersArray.push(rule);
-    colSel.onchange = () => rule.column = colSel.value;
-    opSel.onchange = () => rule.op = opSel.value;
-    valInp.oninput = () => rule.value = valInp.value;
-    rem.onclick = () => { filtersArray.splice(filtersArray.indexOf(rule), 1); container.removeChild(row); };
-  }
-  function applyFilters(arr, filtersArray, mode='and'){
-    if(!filtersArray.length) return arr;
-    return arr.filter(item => {
-      const results = filtersArray.map(r => {
-        const val = String(item[r.column]||'').toLowerCase();
-        const q = String(r.value).toLowerCase();
-        if(r.op==='contains') return val.includes(q);
-        if(r.op==='equals') return val===q;
-        if(r.op==='starts') return val.startsWith(q);
-        if(r.op==='ends') return val.endsWith(q);
-        return false;
-      });
-      return mode==='and' ? results.every(Boolean) : results.some(Boolean);
+        // Filter Wiring
+        $('addDataFilterBtn').onclick = () => {
+            if(!csvRaw.length && !baseBuyers.length && !baseListings.length) return alert('Load data first');
+            // If csvRaw is empty, assume first load of buyers
+            const sample = csvRaw.length ? csvRaw[0] : (baseBuyers[0] || baseListings[0] || {});
+            createFilterRow($('dataFiltersContainer'), Object.keys(sample), dataFilters);
+        };
+        $('applyDataFilters').onclick = () => {
+            const type = $('csvSelect').value.split('.')[0];
+            let data = (type==='buyers') ? baseBuyers : ((type==='listings') ? baseListings : dbMatches);
+            data = applyFilters(data, dataFilters, $('dataFilterMode').value);
+            renderCsvTable(data, type);
+        };
+        $('clearDataFilters').onclick = () => { dataFilters = []; $('dataFiltersContainer').innerHTML=''; $('applyDataFilters').click(); };
+
+        // Match Filter Wiring
+        $('addMatchFilterBtn').onclick = () => {
+            if(!matches.length) return alert("Run matcher first");
+            createFilterRow($('matchFiltersContainer'), Object.keys(matches[0]), matchFilters);
+        };
+        $('applyMatchFilters').onclick = () => {
+            let filtered = applyFilters(matches, matchFilters, $('matchFilterMode').value);
+            renderMatches(filtered);
+        };
+        $('clearMatchFilters').onclick = () => { matchFilters = []; $('matchFiltersContainer').innerHTML=''; renderMatches(matches); };
+
+        // Add Buttons
+        $('addBuyer').onclick = async () => {
+            $('addBuyer').textContent = 'Saving...'; $('addBuyer').disabled = true;
+            const rec = { id: uid('buyer'), name: $('buyer_name').value, mobile: $('buyer_mobile').value, budget_raw: $('buyer_budget').value, budget_unit: $('buyer_budget_unit').value, property_type: $('buyer_property_type').value, preferred_localities: $('buyer_localities').value, email: $('buyer_email').value, mobile2: $('buyer_mobile2').value, country: $('buyer_country').value, state: $('buyer_state').value, city: $('buyer_city').value, service_type: $('buyer_service_type').value, sale_type: $('buyer_sale_type').value, furnishing: $('buyer_furnishing').value, possession_status: $('buyer_possession_status').value, possession_time: $('buyer_possession_time').value, area: $('buyer_area').value, area_unit: $('buyer_area_unit').value, preferred_projects: $('buyer_projects').value, lead_source: $('buyer_lead_source').value, referral: $('buyer_referral').value, nri: $('buyer_nri').value, loan_required: $('buyer_loan_required').value, purpose: $('buyer_purpose').value, specific: $('buyer_specific').value };
+            if(!rec.name) { alert("Name required"); $('addBuyer').disabled = false; return; }
+            await fetch('/api/buyers', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(rec) });
+            alert("Buyer Saved!"); $('addBuyer').textContent = 'Add Buyer'; $('addBuyer').disabled = false; await loadDefaults();
+        };
+
+        $('addListing').onclick = async () => {
+            $('addListing').textContent = 'Saving...'; $('addListing').disabled = true;
+            const rec = { id: uid('listing'), address: $('listing_address').value, price: $('listing_price').value, price_unit: $('listing_price_unit').value, property_type: $('listing_property_type').value, deal_type: $('listing_deal_type').value, bedrooms: $('listing_bedrooms').value, furnishing: $('listing_furnishing').value, state: $('listing_state').value, locality: $('listing_locality').value, project: $('listing_project').value, google_address: $('listing_google_address').value, area: $('listing_area').value, area_unit: $('listing_area_unit').value, deposit: $('listing_deposit').value, deposit_unit: $('listing_deposit_unit').value, contact: $('listing_contact').value, url: $('listing_url').value, description: $('listing_description').value };
+            if(!rec.address) { alert("Address required"); $('addListing').disabled = false; return; }
+            await fetch('/api/listings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(rec) });
+            alert("Listing Saved!"); $('addListing').textContent = 'Add Listing'; $('addListing').disabled = false; await loadDefaults();
+        };
+
+        $('mergeAndRun').onclick = async () => {
+            await loadDefaults();
+            const min = parseFloat($('minScore').value) || 60;
+            matches = runMatcher(baseBuyers, baseListings, min); // Update global matches var
+            renderMatches(matches);
+        };
+
+        $('refreshCsv').onclick = async () => {
+            await loadDefaults();
+            const type = $('csvSelect').value.split('.')[0];
+            let data = (type==='buyers') ? baseBuyers : ((type==='listings') ? baseListings : dbMatches);
+            renderCsvTable(data, type);
+        };
+        $('csvFilterQuick').oninput = $('refreshCsv').onclick;
+
+        $('refreshCsv').click();
     });
-  }
-
-  // Filter Wiring
-  const addDataBtn = $('addDataFilterBtn');
-  if(addDataBtn) addDataBtn.onclick = () => {
-    if(!csvColumns.length) return alert('Load data first');
-    createFilterRow($('dataFiltersContainer'), csvColumns, dataFilters);
-  };
-  const applyDataFiltersBtn = $('applyDataFilters');
-  if(applyDataFiltersBtn) applyDataFiltersBtn.onclick = () => {
-    if(!csvRaw.length) return;
-    const base = csvRaw.map(r => { const obj={}; csvColumns.forEach(c=>obj[c]=r[c]); return obj; });
-    const res = applyFilters(base, dataFilters, $('dataFilterMode').value);
-    csvRaw = res.map((r,i) => ({__index:i, ...r}));
-    renderCsvTable();
-  };
-  const clearDataFiltersBtn = $('clearDataFilters');
-  if(clearDataFiltersBtn) clearDataFiltersBtn.onclick = () => {
-     dataFilters = []; $('dataFiltersContainer').innerHTML = ''; loadCsvFile($('csvSelect').value); 
-  };
   </script>
 </body>
 </html>
